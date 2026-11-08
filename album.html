@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#060308">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="stylesheet.css">
+  <title>Album // HETAIRA.EROS</title>
+  <style>
+    .album-hero { display: grid; grid-template-columns: 280px 1fr; gap: 2rem; align-items: end; margin-bottom: 2rem; }
+    .album-hero .album-art { aspect-ratio: 1; background: #0d0610; border: 1px solid var(--card-border); overflow: hidden; position: relative; clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%); }
+    .album-hero .album-art img { width: 100%; height: 100%; object-fit: cover; }
+    .album-hero h1 { font-family: var(--font-display); font-size: clamp(1.6rem, 4vw, 2.6rem); letter-spacing: 2px; color: #fff; text-transform: uppercase; text-shadow: 0 0 20px rgba(255, 0, 127, .4); line-height: 1.15; margin: .4rem 0 .8rem; }
+    .album-hero .by { color: var(--text-muted); } .album-hero .by a { color: var(--blush-glow); text-decoration: none; font-weight: 600; } .album-hero .by a:hover { text-decoration: underline; }
+    .album-meta { font-family: var(--font-mono); font-size: .8rem; color: var(--cyber-cyan); letter-spacing: 1px; margin: .8rem 0 1.2rem; }
+    @media (max-width: 700px) { .album-hero { grid-template-columns: 1fr; } .album-hero .album-art { max-width: 280px; } }
+  </style>
+</head>
+<body data-nav="albums">
+  <div class="container" id="mainContainer">
+    <a href="albums.html" class="back-nav">&larr; ALL ALBUMS</a>
+    <div id="albumBody"><div class="state-box">LOADING ALBUM...</div></div>
+  </div>
+  <script src="config.js"></script>
+  <script src="common.js"></script>
+  <script src="listing.js"></script>
+  <script>
+    const { esc } = H;
+    document.addEventListener('DOMContentLoaded', async () => {
+      const box = H.$('#albumBody');
+      const slug = H.q('album');
+      if (!slug) { box.innerHTML = H.emptyBox('NO ALBUM SPECIFIED', 'Pick one from the album index.'); return; }
+      try {
+        const cat = await H.loadCatalog();
+        let album;
+        try { album = await H.albumFile(slug); } catch (e) { box.innerHTML = H.emptyBox('ALBUM NOT FOUND', 'It may have been renamed or removed.'); return; }
+        const rows = album.tracks.map(t => ({ t, r: cat.byUuid.get(t.uuid) })).filter(x => x.r && (!x.r.status || x.r.status === 'ACTIVE'));
+        const artist = cat.artistByUuid.get(album.artistUuid);
+        const total = rows.reduce((s, x) => s + (x.r.dur || 0), 0);
+        const playable = rows.find(x => x.r.audio);
+        document.title = album.title + ' // HETAIRA.EROS';
+        box.innerHTML = `
+          <div class="album-hero">
+            <div class="album-art">${H.coverImg({ artistUuid: album.artistUuid, cover: album.cover }, '', album.title)}</div>
+            <div>
+              <div class="hero-eyebrow">// ALBUM</div>
+              <h1>${esc(album.title)}</h1>
+              <div class="by">By ${artist ? `<a href="${H.artistUrl(artist)}">${esc(artist.name)}</a>` : esc(album.artist)}</div>
+              <div class="album-meta">${H.plural(rows.length, 'track')}${total ? ' · ' + H.fmtDur(total) : ''}${album.releaseDate ? ' · ' + esc(album.releaseDate.slice(0, 4)) : ''}</div>
+              <div class="hero-actions">
+                ${playable ? `<a class="cyber-btn" href="${H.detailUrl(playable.r)}">&#9654; START LISTENING</a>` : ''}
+                <button type="button" class="cyber-btn btn-ghost" id="shareBtn">COPY LINK</button>
+              </div>
+            </div>
+          </div>
+          <ol class="tracklist">${rows.map(({ t, r }, i) => `
+            <li><span class="n">${t.track || i + 1}</span>
+              <a class="t" href="${H.detailUrl(r)}">${esc(r.title)}${r.variant && r.variant !== 'ORIGINAL' ? ` <small>[${esc(r.variant)}]</small>` : ''}</a>
+              <span class="vt">${r.audio && r.vtt ? 'CC' : ''}</span><span class="d">${r.dur ? H.fmtDur(r.dur) : ''}</span></li>`).join('')}</ol>`;
+        H.$('#shareBtn').addEventListener('click', () => (navigator.clipboard ? navigator.clipboard.writeText(location.href).then(() => H.toast('Link copied'), () => H.toast('Copy not available')) : H.toast('Copy not available')));
+      } catch (err) { console.error(err); box.innerHTML = H.errorBox('Unable to load this album.'); }
+    });
+  </script>
+</body>
+</html>

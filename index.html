@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#060308">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="stylesheet.css">
+  <title>HETAIRA.EROS // Erotic audio archive</title>
+  <meta name="description" content="An open archive of erotic hypnosis and audio roleplay: browse by artist, album, tag and trigger.">
+  <meta property="og:title" content="HETAIRA.EROS">
+  <meta property="og:description" content="An open archive of erotic hypnosis and audio roleplay.">
+</head>
+<body data-nav="home">
+  <div class="container">
+    <section class="hero">
+      <div class="hero-eyebrow">// OPEN ARCHIVE OF EROTIC AUDIO</div>
+      <h1>Neural <span>Protocol</span><br>Registry</h1>
+      <p>Hypnosis, roleplay and ASMR from independent voice artists. Search the library, follow an artist, or let the archive pick something for you.</p>
+      <form class="hero-search" action="library.html" role="search">
+        <input class="search-input" type="search" name="q" placeholder="SEARCH PROTOCOLS, TAGS, CREATORS..." autocomplete="off" aria-label="Search the archive">
+        <button class="cyber-btn" type="submit">SEARCH</button>
+      </form>
+      <div class="hero-actions">
+        <a class="cyber-btn btn-ghost" href="library.html">BROWSE LIBRARY</a>
+        <a class="cyber-btn btn-ghost" href="library.html?tier=FREE">FREE TO LISTEN</a>
+        <a class="cyber-btn btn-ghost" href="library.html?cc=1">WITH SUBTITLES</a>
+        <button class="cyber-btn btn-ghost" type="button" id="surprise">SURPRISE ME</button>
+      </div>
+      <div class="stat-row" id="statRow"></div>
+    </section>
+
+    <div id="homeSections"><div class="rail"><div class="cyber-card skeleton"><div class="sk-cover"></div><div class="sk-line"></div><div class="sk-line short"></div></div><div class="cyber-card skeleton"><div class="sk-cover"></div><div class="sk-line"></div><div class="sk-line short"></div></div><div class="cyber-card skeleton"><div class="sk-cover"></div><div class="sk-line"></div><div class="sk-line short"></div></div><div class="cyber-card skeleton"><div class="sk-cover"></div><div class="sk-line"></div><div class="sk-line short"></div></div></div></div>
+  </div>
+  <script src="config.js"></script>
+  <script src="common.js"></script>
+  <script src="listing.js"></script>
+  <script>
+    const { esc } = H;
+    const section = (title, link, inner) => `
+      <div class="section-head"><h2>${title}</h2>${link ? `<a href="${link[0]}">${link[1]} &rarr;</a>` : ''}</div>${inner}`;
+    const rail = (cards, cls = '') => `<div class="rail ${cls}">${cards.join('')}</div>`;
+    const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const root = H.$('#homeSections');
+      try {
+        const [cat, albums] = await Promise.all([H.loadCatalog(), H.albumIndex().catch(() => [])]);
+        const items = cat.items;
+        const playable = items.filter(r => r.audio);
+
+        // numbers
+        const tagCounts = new Map(), trigCounts = new Map(), artistCounts = new Map();
+        for (const r of items) {
+          new Set([r.tag, ...r.tags].filter(Boolean)).forEach(t => tagCounts.set(t, (tagCounts.get(t) || 0) + 1));
+          r.triggers.forEach(t => trigCounts.set(t, (trigCounts.get(t) || 0) + 1));
+          r.artistUuids.forEach(u => artistCounts.set(u, (artistCounts.get(u) || 0) + 1));
+        }
+        const top = (m, n) => [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, n);
+        const tile = (n, l) => `<div class="stat-tile"><b>${n}</b><span>${l}</span></div>`;
+        H.$('#statRow').innerHTML = tile(items.length, 'protocols') + tile(artistCounts.size, 'artists') + tile(albums.length, 'albums') + tile(tagCounts.size, 'tags') +
+          tile(items.filter(r => r.audio && r.vtt).length, 'with subtitles');
+
+        let html = '';
+        const recent = H.recent.list().map(u => cat.byUuid.get(u)).filter(Boolean).slice(0, 12);
+        if (recent.length) html += section('Continue <span>listening</span>', null, rail(recent.map(r => H.recordCard(r))));
+        html += section('Latest <span>releases</span>', ['library.html', 'View all'], rail([...items].sort(H.sorters.newest).slice(0, 12).map(r => H.recordCard(r))));
+        if (albums.length) html += section('<span>Albums</span>', ['albums.html', 'All albums'], rail(albums.slice(0, 14).map(H.albumCard), 'albums'));
+        const withCc = shuffle(items.filter(r => r.audio && r.vtt)).slice(0, 10);
+        if (withCc.length) html += section('Listen <span>along</span> · synced subtitles', ['library.html?cc=1', 'All with subtitles'], rail(withCc.map(r => H.recordCard(r))));
+        html += section('Popular <span>tags</span>', ['tags.html', 'All tags'], `<div class="chips">${top(tagCounts, 20).map(([t, n]) => `<a class="chip" href="${H.tagUrl(t)}">#${esc(t)} <b>${n}</b></a>`).join('')}</div>`);
+        if (trigCounts.size) html += section('<span>Triggers</span>', ['triggers.html', 'All triggers'], `<div class="chips">${top(trigCounts, 14).map(([t, n]) => `<a class="chip trigger" href="${H.triggerUrl(t)}">⚡${esc(t)} <b>${n}</b></a>`).join('')}</div>`);
+        const artists = cat.artists.filter(a => artistCounts.get(a.uuid)).sort((a, b) => artistCounts.get(b.uuid) - artistCounts.get(a.uuid));
+        if (artists.length) html += section('<span>Artists</span>', ['artists.html', 'All artists'], rail(artists.map(a => H.artistCard(a, artistCounts.get(a.uuid))), 'artists'));
+        const free = shuffle(playable.filter(r => r._free)).slice(0, 10);
+        if (free.length) html += section('Free <span>to listen</span>', ['library.html?tier=FREE', 'All free'], rail(free.map(r => H.recordCard(r))));
+        root.innerHTML = html;
+
+        H.$('#surprise').addEventListener('click', () => {
+          const pick = playable[Math.floor(Math.random() * playable.length)];
+          if (pick) location.href = H.detailUrl(pick); else H.toast('Nothing playable yet');
+        });
+      } catch (err) {
+        console.error(err);
+        root.innerHTML = H.errorBox('Unable to load the archive.', 'Check your connection and try again.');
+      }
+    });
+  </script>
+</body>
+</html>

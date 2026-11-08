@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#060308">
+  <title>HETAIRA.EROS // NEURAL TRIGGER MATRIX</title>
+  <meta name="description" content="Every hypnotic trigger in the archive with descriptions and file counts.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+  
+  <link rel="stylesheet" href="stylesheet.css">
+  <style>
+    :root {
+      --card-hover-border: #00f0ff;
+    }
+    
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.08) 0%, transparent 60%), radial-gradient(circle at 80% 20%, rgba(255, 0, 110, 0.08) 0%, transparent 50%), linear-gradient(to right, rgba(0, 240, 255, 0.025) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 240, 255, 0.025) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 42px 42px, 42px 42px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .page-title {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #fff;
+      text-transform: uppercase;
+      text-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+    }
+    
+    .page-title span {
+      color: var(--amber-trigger);
+      text-shadow: 0 0 15px var(--amber-glow);
+    }
+    
+    .page-subtitle {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--amber-trigger);
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+    
+    .filter-bar {
+      background: rgba(16, 9, 18, 0.88);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      align-items: center;
+      justify-content: space-between;
+      clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 0 1px rgba(0, 240, 255, 0.3);
+      position: relative;
+    }
+    
+    .filter-bar::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cyber-cyan), var(--amber-trigger), transparent);
+    }
+    
+    .search-input-wrap {
+      flex: 1 1 300px;
+      position: relative;
+    }
+    
+    .search-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      padding: 0.85rem 1.1rem;
+      outline: none;
+      transition: all 0.25s ease;
+      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+    }
+    
+    .search-input:focus {
+      border-color: var(--cyber-cyan);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.35), inset 0 0 8px rgba(0, 240, 255, 0.15);
+    }
+    
+    .cyber-select {
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      color: var(--cyber-cyan);
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      padding: 0.85rem 1.1rem;
+      outline: none;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    
+    .cyber-select:hover, .cyber-select:focus {
+      border-color: var(--amber-trigger);
+      color: var(--amber-trigger);
+      box-shadow: 0 0 15px var(--amber-glow);
+    }
+    
+    .count-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--amber-trigger);
+      text-shadow: 0 0 10px var(--amber-glow);
+      letter-spacing: 1px;
+    }
+    
+    #scrollTrigger {
+      width: 100%;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      color: var(--amber-trigger);
+      margin-top: 3rem;
+      position: relative;
+    }
+    
+    @media (max-width: 860px) {
+      .filter-bar {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body data-nav="triggers">
+
+  <div class="container">
+    <header class="page-header">
+      <h1 class="page-title">NEURAL <span>// TRIGGER MATRIX</span></h1>
+      <p class="page-subtitle">// INDEX OF CONDITIONED AUDITORY ANCHORS, TRANCE HOOKS, AND PSYCHOACOUSTIC REINFORCERS</p>
+    </header>
+
+    <!-- Filter & Sort Bar -->
+    <div class="filter-bar">
+      <div class="search-input-wrap">
+        <input type="text" id="searchInput" class="search-input" placeholder="SEARCH NEURAL TRIGGERS OR COGNITIVE DESCRIPTIONS..." autocomplete="off">
+      </div>
+      <div class="filter-dropdowns">
+        <select id="sortSelect" class="cyber-select" aria-label="Sort Triggers By">
+          <option value="COUNT_DESC">SORT: HIGHEST DENSITY</option>
+          <option value="COUNT_ASC">SORT: LOWEST DENSITY</option>
+          <option value="NAME_ASC">SORT: TRIGGER (A - Z)</option>
+          <option value="NAME_DESC">SORT: TRIGGER (Z - A)</option>
+        </select>
+      </div>
+      <div class="count-indicator" id="resultsCount">// SYNCED: 0 ANCHORS</div>
+    </div>
+
+    <!-- 4-Column Trigger Grid -->
+    <main class="triggers-grid" id="triggersGrid"></main>
+    <div id="scrollTrigger">// ENGAGING NEURAL SCAN...</div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="common.js"></script>
+  <script src="listing.js"></script>
+  <script src="descriptions.js"></script>
+  <script>
+    const { esc } = H;
+    const KIND = 'triggers';
+    const FALLBACK = window.TRIGGER_DESCRIPTIONS || {};
+    const generic = l => `Conditioned acoustic cue programmed to induce ${l} reactions and focused compliance.`;
+    const byCount = (a, b) => b.count - a.count || a.label.localeCompare(b.label);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const grid = H.$('#triggersGrid'), sentinel = H.$('#scrollTrigger');
+      grid.innerHTML = H.skeletons(8, 'trigger-card');
+      try {
+        const idx = await H.termIndex(KIND);
+        H.listPage({
+          items: idx.list.map(t => ({ ...t, desc: t.description || FALLBACK[t.label.toLowerCase()] || generic(t.label.toLowerCase()) })),
+          gridEl: grid, sentinel, searchEl: H.$('#searchInput'), sortEl: H.$('#sortSelect'), countEl: H.$('#resultsCount'), countLabel: 'ANCHORS',
+          text: t => t.label + ' ' + t.desc, empty: 'No triggers match your search.', end: '// END OF TRIGGER MATRIX',
+          sorters: { COUNT_DESC: byCount, COUNT_ASC: (a, b) => a.count - b.count || a.label.localeCompare(b.label),
+                     NAME_ASC: (a, b) => a.label.localeCompare(b.label), NAME_DESC: (a, b) => b.label.localeCompare(a.label) },
+          render: (t, i) => `
+            <a href="${H.triggerUrl(t.label)}" class="trigger-card" aria-label="Trigger: ${esc(t.label)}, ${t.count} files">
+              <div>
+                <div class="trigger-card-top">
+                  <span class="trigger-badge-signal"><span class="signal-dot"></span>SIG::0x${(i + 1).toString(16).padStart(3, '0').toUpperCase()}</span>
+                  <span class="trigger-count-badge">${t.count} ${t.count === 1 ? 'FILE' : 'FILES'}</span>
+                </div>
+                <h2 class="trigger-card-name">⚡ ${esc(t.label)}</h2>
+                <p class="trigger-card-desc">${esc(t.desc)}</p>
+              </div>
+              <div class="trigger-card-footer">
+                <span class="trigger-action-label">EXECUTE QUERY ↗</span>
+                <span class="trigger-type-label">NEURAL.ANCHOR</span>
+              </div>
+            </a>`
+        });
+      } catch (err) { console.error(err); grid.innerHTML = H.errorBox('Unable to load triggers.'); sentinel.textContent = ''; }
+    });
+  </script>
+</body>
+</html>

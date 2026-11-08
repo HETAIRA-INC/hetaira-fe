@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#060308">
+  <title>HETAIRA.EROS // OPERATOR PROFILE</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+  
+  <link rel="stylesheet" href="stylesheet.css">
+</head>
+<body data-nav="artists">
+
+  <div class="container" id="mainContainer">
+    <a href="artists.html" class="back-nav">&larr; RETURN TO OPERATOR DIRECTORY</a>
+
+    <!-- Hero Dossier Banner -->
+    <header class="dossier-hero">
+      <div class="artist-avatar" id="artistAvatar"></div>
+      <div class="hero-topline">
+        <span class="artist-hex-id" id="artistHexIndicator">// OPERATOR_RECORD</span>
+        <div class="system-status">
+          <span class="pulse-pip"></span>
+          OPERATOR DOSSIER ACTIVE
+        </div>
+      </div>
+
+      <h1 class="artist-main-title">
+        <span id="targetArtistName">OPERATOR</span>
+      </h1>
+
+      <p class="artist-main-description" id="targetArtistDescription">
+        Accessing operator neural telemetry and audio attribution files...
+      </p>
+
+      <div class="aliases-list" id="artistAliases"></div>
+      <div id="artistExternalUplink"></div>
+
+      <!-- Dynamic Telemetry Stat HUD -->
+      <div class="telemetry-grid">
+        <div class="telemetry-cell">
+          <span class="telemetry-label">INDEXED PROTOCOLS</span>
+          <span class="telemetry-value cyan" id="statFiles">0</span>
+        </div>
+        <div class="telemetry-cell">
+          <span class="telemetry-label">PRIMARY AUDIENCE</span>
+          <span class="telemetry-value pink" id="statAudience">ANY</span>
+        </div>
+        <div class="telemetry-cell">
+          <span class="telemetry-label">SYSTEM DESIGNATION</span>
+          <span class="telemetry-value gold" id="statPrefix">EROS-OP</span>
+        </div>
+        <div class="telemetry-cell">
+          <span class="telemetry-label">TOTAL RUNTIME</span>
+          <span class="telemetry-value" id="statDuration">--:--</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Cross-Index Interlock Columns -->
+    <section class="correlation-layout">
+      <!-- Associated Tags -->
+      <div class="correlation-card">
+        <div class="correlation-header">
+          <h2 class="correlation-title"><span>✦</span> ASSOCIATED TAGS</h2>
+          <span class="correlation-meta" id="tagsCountMeta">0 IDENTIFIED</span>
+        </div>
+        <div class="pill-matrix" id="assoTagsContainer"></div>
+      </div>
+
+      <!-- Co-Occurring Triggers -->
+      <div class="correlation-card">
+        <div class="correlation-header">
+          <h2 class="correlation-title"><span>⚡</span> CO-OCCURRING TRIGGERS</h2>
+          <span class="correlation-meta" id="triggersCountMeta">0 INTERLOCKED</span>
+        </div>
+        <div class="pill-matrix" id="associatedTriggersContainer"></div>
+      </div>
+    </section>
+
+    <section id="albumsSection" hidden>
+      <div class="section-head"><h2>ALBUMS <span>&amp; SERIES</span></h2></div>
+      <div class="rail albums" id="albumsRail"></div>
+    </section>
+
+    <!-- Files Section Header -->
+    <div class="section-headline">
+      <h2 class="section-title">ASSOCIATED <span>PROTOCOLS</span></h2>
+      <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--cyber-cyan);" id="matchedFilesMeta">
+        [MATCHING PROTOCOLS: 0]
+      </div>
+    </div>
+
+    <!-- Scoped Filter Panel -->
+    <div class="filter-bar">
+      <div class="search-input-wrap">
+        <input type="text" id="searchInput" class="search-input" placeholder="SEARCH WITHIN THIS OPERATOR'S CATALOG..." autocomplete="off">
+      </div>
+      <div class="filter-dropdowns">
+        <select id="audienceFilter" class="cyber-select" aria-label="Filter by Audience">
+          <option value="ALL">AUDIENCE: ALL</option>
+        </select>
+
+        <select id="tierFilter" class="cyber-select" aria-label="Filter by Tier">
+          <option value="ALL">TIER: ALL</option>
+          <option value="FREE">FREE ONLY</option>
+          <option value="PAID">PAID ONLY</option>
+        </select>
+
+        <select id="sortFilter" class="cyber-select" aria-label="Sort">
+          <option value="newest">SORT: NEWEST</option><option value="oldest">SORT: OLDEST</option>
+          <option value="az">SORT: TITLE A-Z</option><option value="longest">SORT: LONGEST</option>
+        </select>
+      </div>
+      <label class="toggle"><input type="checkbox" id="ccFilter"> SUBTITLES</label>
+      <div class="count-indicator" id="resultsCount">// LOADED: 0 RECORDS</div>
+    </div>
+
+    <div class="active-chips" id="activeChips"></div>
+    <main class="cards-grid" id="cardsGrid"></main>
+    <div id="scrollTrigger">// SCROLL FOR MORE PROTOCOLS...</div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="common.js"></script>
+  <script src="listing.js"></script>
+  <script>
+    const { esc } = H;
+    const $ = id => document.getElementById(id);
+    const GENDER = g => (g && g !== 'UNSPECIFIED' ? g : '');   // shown as stored: FEMALE, MALE, NON-BINARY, OTHER
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const want = H.q('a') || H.q('uuid') || H.q('aid') || H.q('artist') || H.q('slug');
+      if (!want) return renderError('NO OPERATOR SPECIFIED', 'Please select a voice operator from the directory.');
+      try {
+        const cat = await H.loadCatalog();
+        const artist = cat.artistBySlug.get(want) || cat.artistByUuid.get(want) || cat.artists.find(a => H.slugify(a.name) === H.slugify(want));
+        if (!artist) return renderError('OPERATOR NOT FOUND', 'No profile matches that token in the registry.');
+        const rows = cat.items.filter(r => r.artistUuids.includes(artist.uuid));
+
+        header(artist, rows);
+        // albums by this artist
+        const albums = (await H.albumIndex().catch(() => [])).filter(a => a.artistUuid === artist.uuid);
+        if (albums.length) { $('albumsSection').hidden = false; $('albumsRail').innerHTML = albums.map(H.albumCard).join(''); }
+
+        const tags = H.tally(rows, r => [r.tag, ...r.tags].filter(Boolean).map(t => ({ key: H.slugify(t), label: t, href: H.tagUrl(t) })));
+        $('tagsCountMeta').textContent = `${tags.length} IDENTIFIED`;
+        H.pills($('assoTagsContainer'), tags.slice(0, 30).map(t => ({ ...t, icon: '#' })), 'NO TAGS INDEXED');
+        const trigs = H.tally(rows, r => r.triggers.map(t => ({ key: H.slugify(t), label: t, href: H.triggerUrl(t) })));
+        $('triggersCountMeta').textContent = `${trigs.length} INTERLOCKED`;
+        H.pills($('associatedTriggersContainer'), trigs.map(t => ({ ...t, icon: '⚡', cls: 'trigger-chip' })), 'NO TRIGGERS INDEXED');
+
+        H.recordBrowser({ rows, gridEl: $('cardsGrid'), sentinel: $('scrollTrigger'), searchEl: $('searchInput'), audienceEl: $('audienceFilter'), tierEl: $('tierFilter'), sortEl: $('sortFilter'),
+          ccEl: $('ccFilter'), countEl: $('resultsCount'), matchedEl: $('matchedFilesMeta'), persist: true,
+          initial: { q: H.q('q'), audience: H.q('audience'), tier: H.q('tier'), sort: H.q('sort'), cc: H.q('cc') }, extraParams: () => ({ a: artist.slug }) });
+      } catch (err) { console.error(err); renderError('CRITICAL TELEMETRY READ ERROR', 'Unable to load this operator.'); }
+    });
+
+    function renderError(title, desc) {
+      $('mainContainer').innerHTML = `<a href="artists.html" class="back-nav">&larr; RETURN TO OPERATOR DIRECTORY</a>
+        <div class="empty-dossier"><h2 style="color:var(--crimson-lust); font-family:var(--font-display); font-size:1.8rem; margin-bottom:1rem;">// ${esc(title)} //</h2><p>${esc(desc)}</p></div>`;
+    }
+
+    function header(a, rows) {
+      document.title = `${a.name} // HETAIRA.EROS`;
+      $('targetArtistName').textContent = a.name;
+      $('artistAvatar').innerHTML = H.avatarImg(a, 'artist-avatar-img');
+      $('targetArtistDescription').innerHTML = (a.description || '').split(/\n{2,}/).filter(Boolean).map(p => `<span class="para">${esc(p.trim()).replace(/\n/g, '<br>')}</span>`).join('')
+        || 'Voice operator archived in the Hetaira neural databank.';
+      let hash = 0; for (const ch of a.uuid || a.slug) hash = ((hash << 5) - hash + ch.charCodeAt(0)) | 0;
+      $('artistHexIndicator').textContent = `// OPERATOR_RECORD [0x${Math.abs(hash).toString(16).padStart(6, '0').slice(0, 6).toUpperCase()}]`;
+      const meta = [];
+      if (GENDER(a.gender)) meta.push(`<span class="alias-pill">${esc(GENDER(a.gender))}</span>`);
+      (a.aliases || []).forEach(x => meta.push(`<span class="alias-pill">aka ${esc(x)}</span>`));
+      $('artistAliases').innerHTML = meta.join('');
+      $('artistExternalUplink').innerHTML = /^https?:\/\//i.test(a.site || '') ? `<a href="${esc(H.safeUrl(a.site))}" target="_blank" rel="noopener noreferrer" class="cyber-btn btn-ghost" style="margin-top:1rem">VISIT OFFICIAL SITE ↗</a>` : '';
+      const t = H.telemetry(rows);
+      H.fillTelemetry(t); $('statPrefix').textContent = a.idPrefix || 'EROS-OP';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HETAIRA.EROS // OPERATOR REGISTRY</title>
+  <meta name="description" content="Every voice artist in the archive.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
+
+    
+    <link rel="stylesheet" href="stylesheet.css">
+  <style>
+    :root {
+      --grid-line: rgba( 255, 0, 127, 0.08 );
+      --font-display: "Orbitron", monospace, sans-serif;
+      --font-body: "Rajdhani", sans-serif;
+      --font-mono: "Share Tech Mono", monospace;
+    }
+    
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient( circle at 50% 0%, rgba(255, 0, 110, 0.12) 0%, transparent 60% ), linear-gradient( to right, rgba(255, 0, 127, 0.035) 1px, transparent 1px ), linear-gradient( to bottom, rgba(255, 0, 127, 0.035) 1px, transparent 1px );
+      background-size: 100% 100%, 42px 42px, 42px 42px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .page-title span {
+      color: var(--neon-violet);
+      text-shadow: 0 0 15px var(--neon-violet-glow);
+    }
+    
+    .page-subtitle {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--neon-violet);
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+    
+    .filter-bar {
+      background: rgba(16, 9, 18, 0.88);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      align-items: center;
+      justify-content: space-between;
+      clip-path: polygon( 0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px) );
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 0 1px rgba(255, 0, 127, 0.4);
+      position: relative;
+    }
+    
+    .filter-bar::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient( 90deg, transparent, var(--neon-pink), var(--neon-violet), transparent );
+    }
+    
+    .search-input-wrap {
+      flex: 1 1 300px;
+      position: relative;
+    }
+    
+    .search-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(255, 0, 127, 0.35);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      padding: 0.85rem 1.1rem;
+      outline: none;
+      transition: all 0.25s ease;
+      clip-path: polygon( 0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100% );
+    }
+    
+    .search-input:focus {
+      border-color: var(--neon-pink);
+      box-shadow: 0 0 20px rgba(255, 0, 127, 0.35), inset 0 0 8px rgba(255, 0, 127, 0.2);
+    }
+    
+    .cyber-card {
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      color: inherit;
+      background: var(--card-bg);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--card-border);
+      clip-path: polygon( 0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px) );
+      transition: transform 0.35s cubic-bezier(0.165, 0.84, 0.44, 1), border-color 0.35s ease, box-shadow 0.35s ease;
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    
+    .card-cover-wrapper {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      background-color: #0d0610;
+      overflow: hidden;
+    }
+    
+    .scanline-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(rgba(18, 10, 20, 0) 50%, rgba(0, 0, 0, 0.45) 50%), linear-gradient( 90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 255, 0, 0.03) );
+      background-size: 100% 4px, 6px 100%;
+      opacity: 0.6;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .eq-bar {
+      width: 3px;
+      height: 4px;
+      background-color: var(--cyber-cyan);
+      border-radius: 1px;
+      transition: height 0.2s ease;
+    }
+    
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-display);
+      font-size: 0.72rem;
+      margin-bottom: 0.45rem;
+      letter-spacing: 1px;
+    }
+    
+    .card-tag {
+      color: var(--cyber-cyan);
+      font-family: var(--font-mono);
+      opacity: 0.85;
+      text-transform: uppercase;
+    }
+    
+    .tag-pill {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      padding: 3px 8px;
+      background: rgba(0, 240, 255, 0.06);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      color: var(--cyber-cyan);
+      border-radius: 2px;
+      letter-spacing: 0.5px;
+    }
+    
+    .card-footer {
+      border-top: 1px solid rgba(255, 0, 110, 0.2);
+      background: rgba(10, 4, 11, 0.9);
+      padding: 0.85rem 1.25rem;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      align-items: center;
+      position: relative;
+    }
+    
+    .card-footer::before {
+      content: "";
+      position: absolute;
+      top: -1px;
+      left: 20%;
+      right: 20%;
+      height: 1px;
+      background: linear-gradient( 90deg, transparent, var(--neon-pink), transparent );
+      opacity: 0.6;
+    }
+    
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #fff;
+      font-weight: 700;
+    }
+    
+    #scrollTrigger {
+      width: 100%;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      color: var(--blush-glow);
+      margin-top: 3rem;
+      position: relative;
+    }
+    
+    @media (max-width: 820px) {
+      .nav-container {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+      .filter-bar {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+  <body data-nav="artists">
+
+    <div class="container">
+      <header class="page-header">
+        <h1 class="page-title">NEURAL <span>// Operator Registry</span></h1>
+        <p class="page-subtitle">
+          // DIRECTORY OF CERTIFIED VOICE OPERATORS AND NEURAL ARCHITECTS
+        </p>
+      </header>
+
+      <!-- Filter Panel -->
+      <div class="filter-bar">
+        <div class="search-input-wrap">
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="SEARCH OPERATORS, PREFIXES, ALIASES, OR STYLES..."
+            autocomplete="off"
+          />
+        </div>
+        <div class="filter-dropdowns">
+          <select
+            id="sortFilter"
+            class="cyber-select"
+            aria-label="Sort Operators"
+          >
+            <option value="COUNT_DESC">SORT: MOST FILES</option>
+            <option value="COUNT_ASC">SORT: LEAST FILES</option>
+            <option value="NAME_ASC">SORT: NAME (A-Z)</option>
+            <option value="NAME_DESC">SORT: NAME (Z-A)</option>
+          </select>
+        </div>
+        <div class="count-indicator" id="resultsCount">
+          // LOADED: 0 OPERATORS
+        </div>
+      </div>
+
+      <!-- Main Artists Grid: 3 per row -->
+      <main class="artists-grid" id="artistsGrid"></main>
+      <div id="scrollTrigger">// SCANNING ARTIST REGISTRY...</div>
+    </div>
+
+    <script src="config.js"></script>
+  <script src="common.js"></script>
+  <script src="listing.js"></script>
+  <script>
+    const { esc } = H;
+    const GENDER = g => (g && g !== 'UNSPECIFIED' ? g : '');   // shown as stored: FEMALE, MALE, NON-BINARY, OTHER
+    document.addEventListener('DOMContentLoaded', async () => {
+      const grid = H.$('#artistsGrid'), sentinel = H.$('#scrollTrigger');
+      grid.innerHTML = H.skeletons(6);
+      try {
+        const cat = await H.loadCatalog();
+        const stats = new Map(cat.artists.map(a => [a.uuid, { count: 0, tags: new Map(), aud: new Map() }]));
+        for (const r of cat.items) for (const u of r.artistUuids) {
+          const s = stats.get(u); if (!s) continue;
+          s.count++; r.tags.forEach(t => s.tags.set(t, (s.tags.get(t) || 0) + 1)); if (r.audience) s.aud.set(r.audience, (s.aud.get(r.audience) || 0) + 1);
+        }
+        const top = m => [...m.entries()].sort((a, b) => b[1] - a[1]).map(e => e[0]);
+        const items = cat.artists.filter(a => (!a.status || a.status === 'ACTIVE') && stats.get(a.uuid).count).map(a => {
+          const s = stats.get(a.uuid);
+          return { a, name: a.name, count: s.count, tags: top(s.tags).slice(0, 3), aud: top(s.aud).slice(0, 2).join(' / ') || 'UNIVERSAL',
+                   blurb: (a.description || '').split(/\n+/)[0].slice(0, 150) || `Voice operator with ${s.count} archived transmission${s.count === 1 ? '' : 's'}.` };
+        });
+        H.listPage({
+          items, gridEl: grid, sentinel, searchEl: H.$('#searchInput'), sortEl: H.$('#sortFilter'), countEl: H.$('#resultsCount'), countLabel: 'OPERATORS',
+          text: i => [i.name, i.a.idPrefix, ...(i.a.aliases || []), ...i.tags, i.blurb].join(' '), empty: 'No operators match your search.', end: '// END OF OPERATOR REGISTRY',
+          sorters: { COUNT_DESC: (a, b) => b.count - a.count || a.name.localeCompare(b.name), COUNT_ASC: (a, b) => a.count - b.count || a.name.localeCompare(b.name),
+                     NAME_ASC: (a, b) => a.name.localeCompare(b.name), NAME_DESC: (a, b) => b.name.localeCompare(a.name) },
+          render: i => `
+            <a href="${H.artistUrl(i.a)}" class="cyber-card" aria-label="${esc(i.name)}">
+              <div class="card-cover-wrapper">
+                ${H.avatarImg(i.a, 'card-cover')}
+                <div class="scanline-overlay"></div>
+                <div class="floating-badges"><span class="badge-count">FILES: <span>${i.count}</span></span>
+                  <div class="audio-eq-bars"><span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span><span class="eq-bar"></span></div></div>
+              </div>
+              <div class="card-body">
+                <div class="card-meta"><span class="card-id">${esc(i.a.idPrefix || 'OP')}</span><span class="card-tag">${esc(GENDER(i.a.gender) || 'CREATOR')}</span></div>
+                <h2 class="artist-name">${esc(i.name)}</h2>
+                <p class="artist-desc">${esc(i.blurb)}</p>
+                ${i.tags.length ? `<div class="pills-container">${i.tags.map(t => `<span class="tag-pill">${esc(t)}</span>`).join('')}</div>` : ''}
+              </div>
+              <footer class="card-footer" style="grid-template-columns:1fr 1fr">
+                <div class="footer-stat"><span class="stat-label">TOTAL ARCHIVED</span><span class="stat-value primary">${H.plural(i.count, 'TRANSMISSION')}</span></div>
+                <div class="footer-stat"><span class="stat-label">DOMINANT FORMAT</span><span class="stat-value secondary">${esc(i.aud)}</span></div>
+              </footer>
+            </a>`
+        });
+      } catch (err) { console.error(err); grid.innerHTML = H.errorBox('Unable to load the operator registry.'); sentinel.textContent = ''; }
+    });
+  </script>
+  </body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#060308">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="stylesheet.css">
+  <title>Albums // HETAIRA.EROS</title>
+  <meta name="description" content="Collections and series from the archive's artists.">
+</head>
+<body data-nav="albums">
+  <div class="container">
+    <header class="page-header">
+      <h1 class="page-title">NEURAL <span>// ALBUM INDEX</span></h1>
+      <p class="page-subtitle">// COLLECTIONS, SERIES AND MULTI-PART SESSIONS</p>
+    </header>
+    <div class="filter-bar">
+      <div class="search-input-wrap">
+        <input type="search" id="searchInput" class="search-input" placeholder="SEARCH ALBUMS OR ARTISTS..." autocomplete="off" aria-label="Search albums">
+      </div>
+      <div class="filter-dropdowns">
+        <select id="sortSelect" class="cyber-select" aria-label="Sort albums">
+          <option value="NEW">SORT: NEWEST</option><option value="COUNT_DESC">SORT: MOST TRACKS</option>
+          <option value="NAME_ASC">SORT: TITLE (A-Z)</option><option value="NAME_DESC">SORT: TITLE (Z-A)</option>
+        </select>
+      </div>
+      <div class="count-indicator" id="resultsCount">// ALBUMS: 0</div>
+    </div>
+    <main class="albums-grid" id="albumsGrid"></main>
+    <div id="scrollTrigger"></div>
+  </div>
+  <script src="config.js"></script>
+  <script src="common.js"></script>
+  <script src="listing.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const grid = H.$('#albumsGrid'), sentinel = H.$('#scrollTrigger');
+      try {
+        await H.loadCatalog();                       // also warms the version/cache for the pages that follow
+        const albums = await H.albumIndex();
+        H.listPage({
+          items: albums, gridEl: grid, sentinel, searchEl: H.$('#searchInput'), sortEl: H.$('#sortSelect'), countEl: H.$('#resultsCount'), countLabel: 'ALBUMS',
+          text: a => a.title + ' ' + a.artist, render: H.albumCard, size: 24, empty: 'No albums yet.', end: '// END OF ALBUMS',
+          sorters: {
+            NEW: (a, b) => String(b.releaseDate).localeCompare(String(a.releaseDate)) || a.title.localeCompare(b.title),
+            COUNT_DESC: (a, b) => b.count - a.count || a.title.localeCompare(b.title),
+            NAME_ASC: (a, b) => a.title.localeCompare(b.title), NAME_DESC: (a, b) => b.title.localeCompare(a.title)
+          }
+        });
+      } catch (err) { console.error(err); grid.innerHTML = H.errorBox('Unable to load albums.'); }
+    });
+  </script>
+</body>
+</html>

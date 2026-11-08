@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#060308">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="stylesheet.css">
+  <title>Library // HETAIRA.EROS</title>
+  <meta name="description" content="Browse every protocol in the archive. Filter by artist, audience, album, tags and triggers.">
+</head>
+<body data-nav="library">
+  <div class="container">
+    <header class="page-header">
+      <h1 class="page-title">NEURAL <span>// PROTOCOL REGISTRY</span></h1>
+      <p class="page-subtitle">// DIRECTORY OF VERIFIED VOICE OPERATIONS AND NEURAL ARCHITECTURES</p>
+    </header>
+
+    <div class="filter-bar lib-filters">
+      <div class="search-input-wrap">
+        <input type="search" id="searchInput" class="search-input" placeholder="SEARCH PROTOCOLS, TAGS, CREATORS...  ( / )" autocomplete="off" aria-label="Search">
+      </div>
+      <div class="filter-dropdowns">
+        <select id="artistFilter" class="cyber-select" aria-label="Artist"><option value="ALL">ARTIST: ALL</option></select>
+        <select id="audienceFilter" class="cyber-select" aria-label="Audience"><option value="ALL">AUDIENCE: ALL</option></select>
+        <select id="tierFilter" class="cyber-select" aria-label="Tier">
+          <option value="ALL">TIER: ALL</option><option value="FREE">FREE ONLY</option><option value="PAID">PAID ONLY</option>
+        </select>
+        <select id="sortFilter" class="cyber-select" aria-label="Sort">
+          <option value="newest">SORT: NEWEST</option><option value="oldest">SORT: OLDEST</option>
+          <option value="az">SORT: TITLE A-Z</option><option value="za">SORT: TITLE Z-A</option><option value="longest">SORT: LONGEST</option>
+        </select>
+      </div>
+      <div class="filter-toggles">
+        <label class="toggle"><input type="checkbox" id="ccFilter"> SUBTITLES</label>
+        <label class="toggle"><input type="checkbox" id="favFilter"> ♥ SAVED</label>
+      </div>
+      <div class="count-indicator" id="resultsCount">// MATCHED: 0 PROTOCOLS</div>
+    </div>
+
+    <div class="chips" id="activeChips" style="margin-bottom:1.2rem"></div>
+    <main class="cards-grid" id="cardsGrid"><div class="cyber-card skeleton"><div class="sk-cover"></div><div class="sk-line"></div></div><div class="cyber-card skeleton"><div class="sk-cover"></div><div class="sk-line"></div></div><div class="cyber-card skeleton"><div class="sk-cover"></div><div class="sk-line"></div></div></main>
+    <div id="scrollTrigger"></div>
+  </div>
+  <script src="config.js"></script>
+  <script src="common.js"></script>
+  <script src="listing.js"></script>
+  <script>
+    const { esc, $ } = H;
+    // tag / trigger / album filters come from links on other pages and can be removed with a chip
+    const url = { tag: H.q('tag'), trigger: H.q('trigger'), album: H.q('album') };
+    let cat, browser;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        cat = await H.loadCatalog();
+        const artistSel = $('#artistFilter');
+        const counts = new Map();
+        cat.items.forEach(r => r.artistUuids.forEach(u => counts.set(u, (counts.get(u) || 0) + 1)));
+        cat.artists.filter(a => counts.get(a.uuid)).sort((a, b) => a.name.localeCompare(b.name)).forEach(a => artistSel.add(new Option(`${a.name} (${counts.get(a.uuid)})`, a.slug)));
+        const wanted = H.q('artist');
+        const hit = cat.artistBySlug.get(wanted) || cat.artistByUuid.get(wanted) || cat.artists.find(a => H.slugify(a.name) === H.slugify(wanted));
+        if (hit && [...artistSel.options].some(o => o.value === hit.slug)) artistSel.value = hit.slug;
+
+        browser = H.recordBrowser({
+          rows: cat.items, gridEl: $('#cardsGrid'), sentinel: $('#scrollTrigger'),
+          searchEl: $('#searchInput'), audienceEl: $('#audienceFilter'), tierEl: $('#tierFilter'), sortEl: $('#sortFilter'),
+          ccEl: $('#ccFilter'), favEl: $('#favFilter'), countEl: $('#resultsCount'), persist: true,
+          initial: { q: H.q('q') || H.q('search'), audience: H.q('audience'), tier: H.q('tier'), sort: H.q('sort'), cc: H.q('cc'), fav: H.q('fav') },
+          extraFilter: r => {
+            const a = artistSel.value;
+            // read the URL filters at filter time: removing a chip clears them
+            const tagSlug = url.tag && H.slugify(url.tag), trigSlug = url.trigger && H.slugify(url.trigger);
+            return (a === 'ALL' || r._artists.some(x => x.slug === a)) &&
+              (!tagSlug || r._tagSlugs.has(tagSlug)) && (!trigSlug || r._trigSlugs.has(trigSlug)) && (!url.album || r._albumSlug === url.album);
+          },
+          extraParams: () => ({ artist: artistSel.value !== 'ALL' ? artistSel.value : '', tag: url.tag, trigger: url.trigger, album: url.album }),
+          onApply: renderChips
+        });
+        artistSel.addEventListener('change', browser.apply);
+        if (H.q('fav') === '1') document.body.dataset.nav = 'favourites';
+      } catch (err) {
+        console.error('Failed to load catalog:', err);
+        $('#cardsGrid').innerHTML = H.errorBox('Unable to load the archive.', 'Check your connection and try again.');
+      }
+    });
+
+    function renderChips() {
+      const chips = [];
+      if (url.tag) chips.push({ key: 'tag', icon: '#', label: url.tag.replace(/-/g, ' ').toUpperCase() });
+      if (url.trigger) chips.push({ key: 'trigger', icon: '⚡', label: url.trigger.replace(/-/g, ' ').toUpperCase() });
+      if (url.album) { const r = cat.items.find(x => x._albumSlug === url.album); chips.push({ key: 'album', icon: '💿 ', label: r ? r.album : url.album }); }
+      H.activeChips($('#activeChips'), chips, k => { url[k] = ''; browser.apply(); });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#060308">
+  <title>HETAIRA.EROS // NEURAL TAG INDEX</title>
+  <meta name="description" content="Every tag in the archive with descriptions and file counts.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+  
+  <link rel="stylesheet" href="stylesheet.css">
+  <style>
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle at 50% 0%, rgba(255, 0, 110, 0.12) 0%, transparent 60%), linear-gradient(to right, rgba(255, 0, 127, 0.035) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 0, 127, 0.035) 1px, transparent 1px);
+      background-size: 100% 100%, 42px 42px, 42px 42px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .page-title span {
+      color: var(--cyber-cyan);
+      text-shadow: 0 0 15px var(--cyber-cyan-glow);
+    }
+    
+    .page-subtitle {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--cyber-cyan);
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+    
+    .filter-bar {
+      background: rgba(16, 9, 18, 0.88);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      align-items: center;
+      justify-content: space-between;
+      clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 0 1px rgba(255, 0, 127, 0.4);
+      position: relative;
+    }
+    
+    .filter-bar::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--neon-violet), var(--cyber-cyan), transparent);
+    }
+    
+    .search-input-wrap {
+      flex: 1 1 300px;
+      position: relative;
+    }
+    
+    .search-input:focus {
+      border-color: var(--neon-pink);
+      box-shadow: 0 0 20px rgba(255, 0, 127, 0.35), inset 0 0 8px rgba(255, 0, 127, 0.2);
+    }
+    
+    #scrollTrigger {
+      width: 100%;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      color: var(--blush-glow);
+      margin-top: 3rem;
+      position: relative;
+    }
+    
+    @media (max-width: 860px) {
+      .filter-bar {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body data-nav="tags">
+
+  <div class="container">
+    <header class="page-header">
+      <h1 class="page-title">NEURAL <span>// Tag  index</span></h1>
+      <p class="page-subtitle">// EXPLORE THE ARCHIVE VIA SPECIALIZED PSYCHOACOUSTIC ATTRIBUTES AND THEMES</p>
+    </header>
+
+    <!-- Filter & Sort Bar -->
+    <div class="filter-bar">
+      <div class="search-input-wrap">
+        <input type="text" id="searchInput" class="search-input" placeholder="SEARCH TAGS OR DESCRIPTIONS..." autocomplete="off">
+      </div>
+      <div class="filter-dropdowns">
+        <select id="sortSelect" class="cyber-select" aria-label="Sort Tags By">
+          <option value="COUNT_DESC">SORT: MOST FILES</option>
+          <option value="COUNT_ASC">SORT: FEWEST FILES</option>
+          <option value="NAME_ASC">SORT: NAME (A - Z)</option>
+          <option value="NAME_DESC">SORT: NAME (Z - A)</option>
+        </select>
+      </div>
+      <div class="count-indicator" id="resultsCount">// LOADED: 0 TAGS</div>
+    </div>
+
+    <!-- 4-Column Tag Grid -->
+    <main class="tags-grid" id="tagsGrid"></main>
+    <div id="scrollTrigger">// PARSING ATTRIBUTE MATRIX...</div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="common.js"></script>
+  <script src="listing.js"></script>
+  <script src="descriptions.js"></script>
+  <script>
+    const { esc } = H;
+    const KIND = 'tags';
+    const FALLBACK = window.TAG_DESCRIPTIONS || {};
+    const generic = l => `Specialized acoustic protocol focusing on ${l} themes, audio dynamics and sensory elements.`;
+    const byCount = (a, b) => b.count - a.count || a.label.localeCompare(b.label);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const grid = H.$('#tagsGrid'), sentinel = H.$('#scrollTrigger');
+      grid.innerHTML = H.skeletons(8, 'tag-card');
+      try {
+        const idx = await H.termIndex(KIND);
+        H.listPage({
+          items: idx.list.map(t => ({ ...t, desc: t.description || FALLBACK[t.label.toLowerCase()] || generic(t.label.toLowerCase()) })),
+          gridEl: grid, sentinel, searchEl: H.$('#searchInput'), sortEl: H.$('#sortSelect'), countEl: H.$('#resultsCount'), countLabel: 'TAGS',
+          text: t => t.label + ' ' + t.desc, empty: 'No tags match your search.', end: '// END OF TAG ARCHIVE',
+          sorters: { COUNT_DESC: byCount, COUNT_ASC: (a, b) => a.count - b.count || a.label.localeCompare(b.label),
+                     NAME_ASC: (a, b) => a.label.localeCompare(b.label), NAME_DESC: (a, b) => b.label.localeCompare(a.label) },
+          render: (t, i) => `
+            <a href="${H.tagUrl(t.label)}" class="tag-card" aria-label="Tag: ${esc(t.label)}, ${t.count} files">
+              <div>
+                <div class="tag-card-top">
+                  <span class="tag-badge-prefix">//0x${(i + 1).toString(16).padStart(3, '0').toUpperCase()}</span>
+                  <span class="tag-count-badge">${t.count} ${t.count === 1 ? 'FILE' : 'FILES'}</span>
+                </div>
+                <h2 class="tag-card-name">#${esc(t.label)}</h2>
+                <p class="tag-card-desc">${esc(t.desc)}</p>
+              </div>
+              <div class="tag-card-footer">
+                <span class="tag-action-label">VIEW PROTOCOLS ↗</span>
+                <span class="tag-index-meta">DATA.TAG</span>
+              </div>
+            </a>`
+        });
+      } catch (err) { console.error(err); grid.innerHTML = H.errorBox('Unable to load tags.'); sentinel.textContent = ''; }
+    });
+  </script>
+</body>
+</html>

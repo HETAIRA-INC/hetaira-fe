@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#060308">
+  <title>HETAIRA.EROS // NEURAL TAG DOSSIER</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+  
+  <link rel="stylesheet" href="stylesheet.css">
+  <style>
+    .scanline-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient( rgba(18, 10, 20, 0) 50%, rgba(0, 0, 0, 0.45) 50% );
+      background-size: 100% 4px;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    
+    .tag-pill.current-active {
+      border-color: var(--neon-pink);
+      color: var(--neon-pink);
+      background: rgba(255, 0, 110, 0.1);
+    }
+    
+    @media (max-width: 980px) {
+      .telemetry-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .tag-main-title {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body data-nav="tags">
+
+  <div class="container">
+    <a href="tags.html" class="back-nav">← RETURN TO ALL TAGS</a>
+
+    <!-- Hero Dossier Banner -->
+    <header class="dossier-hero">
+      <div class="hero-topline">
+        <span class="tag-hex-id" id="tagHexIndicator">// NEURAL_INDEX_RECORD</span>
+        <div class="system-status">
+          <span class="pulse-pip"></span>
+          ENCRYPTED PROFILE LOADED
+        </div>
+      </div>
+
+      <h1 class="tag-main-title">
+        #<span id="targetTagName">UNKNOWN</span>
+      </h1>
+
+      <p class="tag-main-description" id="targetTagDescription">
+        Deciphering psychoacoustic classification telemetry...
+      </p>
+
+      <!-- Dynamic Telemetry Stat HUD -->
+      <div class="telemetry-grid">
+        <div class="telemetry-cell">
+          <span class="telemetry-label">INDEXED PROTOCOLS</span>
+          <span class="telemetry-value cyan" id="statFiles">0</span>
+        </div>
+        <div class="telemetry-cell">
+          <span class="telemetry-label">PRIMARY AUDIENCE</span>
+          <span class="telemetry-value pink" id="statAudience">N/A</span>
+        </div>
+        <div class="telemetry-cell">
+          <span class="telemetry-label">SYNCED CREATORS</span>
+          <span class="telemetry-value gold" id="statArtists">0</span>
+        </div>
+        <div class="telemetry-cell">
+          <span class="telemetry-label">TOTAL AUDIO RUNTIME</span>
+          <span class="telemetry-value" id="statDuration">--:--</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Cross-Index Interlock Columns -->
+    <section class="correlation-layout">
+      <!-- Associated Artists -->
+      <div class="correlation-card">
+        <div class="correlation-header">
+          <h2 class="correlation-title"><span>✦</span> ASSOCIATED ARTISTS</h2>
+          <span class="correlation-meta" id="artistsCountMeta">0 IDENTIFIED</span>
+        </div>
+        <div class="pill-matrix" id="associatedArtistsContainer">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Co-Occurring Triggers -->
+      <div class="correlation-card">
+        <div class="correlation-header">
+          <h2 class="correlation-title"><span>⚡</span> CO-OCCURRING TRIGGERS</h2>
+          <span class="correlation-meta" id="triggersCountMeta">0 INTERLOCKED</span>
+        </div>
+        <div class="pill-matrix" id="associatedTriggersContainer">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Files Section Header -->
+    <div class="section-headline">
+      <h2 class="section-title">ASSOCIATED <span>PROTOCOLS</span></h2>
+      <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--cyber-cyan);" id="matchedFilesMeta">
+        [MATCHING FILES: 0]
+      </div>
+    </div>
+
+    <!-- Filter Bar for Matching Files -->
+    <div class="filter-bar">
+      <div class="search-input-wrap">
+        <input type="text" id="fileSearchInput" class="search-input" placeholder="SEARCH WITHIN THIS TAG'S PROTOCOLS..." autocomplete="off">
+      </div>
+      <div>
+        <select id="tierFilter" class="cyber-select" aria-label="Filter Tier">
+          <option value="ALL">TIER: ALL</option>
+          <option value="FREE">FREE ONLY</option>
+          <option value="PAID">PAID ONLY</option>
+        </select>
+        <select id="sortFilter" class="cyber-select" aria-label="Sort">
+          <option value="newest">SORT: NEWEST</option><option value="oldest">SORT: OLDEST</option>
+          <option value="az">SORT: TITLE A-Z</option><option value="longest">SORT: LONGEST</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Files Grid -->
+    <main class="cards-grid" id="associatedFilesGrid"></main>
+    <div id="scrollTrigger"></div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="common.js"></script>
+  <script src="listing.js"></script>
+  <script src="descriptions.js"></script>
+  <script>
+    const { esc } = H;
+    const KIND = 'tags';
+    const FALLBACK = window.TAG_DESCRIPTIONS || {};
+    const $ = id => document.getElementById(id);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const raw = (H.q('tag') || H.q('name')).trim();
+      if (!raw) return showEmpty('NO TARGET TAG SPECIFIED', 'Please select one from the tags directory.');
+      try {
+        const [cat, idx] = await Promise.all([H.loadCatalog(), H.termIndex(KIND)]);
+        const entry = idx.find(raw);
+        if (!entry) return showEmpty('TAG NOT FOUND', 'No archive record carries that tag.');
+        const file = await H.termFile(KIND, entry.slug);
+        const rows = H.rowsFor(cat, file.uuids);
+
+        $('targetTagName').textContent = entry.label.toUpperCase();
+        document.title = `HETAIRA.EROS // #${entry.label.toUpperCase()}`;
+        let hash = 0; for (const ch of entry.slug) hash = ((hash << 5) - hash + ch.charCodeAt(0)) | 0;
+        $('tagHexIndicator').textContent = `// TAG_INDEX_RECORD [0x${Math.abs(hash).toString(16).padStart(6, '0').slice(0, 6).toUpperCase()}]`;
+        $('targetTagDescription').textContent = entry.description || FALLBACK[entry.label.toLowerCase()] ||
+          `Classified psychoacoustic tag covering audio triggers, pacing and thematic elements around "${entry.label.toLowerCase()}".`;
+
+        H.fillTelemetry(H.telemetry(rows));
+        const artists = H.tally(rows, r => r._artists.map(a => ({ key: a.slug, label: a.name, href: H.artistUrl(a) })));
+        $('artistsCountMeta').textContent = `${artists.length} IDENTIFIED`;
+        H.pills($('associatedArtistsContainer'), artists.map(a => ({ ...a, icon: '👤' })), 'ANONYMOUS TRANSMISSIONS');
+        const other = H.tally(rows, r => r.triggers.map(t => ({ key: H.slugify(t), label: t, href: H.triggerUrl(t) })));
+        $('triggersCountMeta').textContent = `${other.length} INTERLOCKED`;
+        H.pills($('associatedTriggersContainer'), other.map(o => ({ ...o, icon: '⚡', cls: 'trigger-chip' })), 'NO TRIGGERS INDEXED');
+
+        H.recordBrowser({ rows, gridEl: $('associatedFilesGrid'), sentinel: $('scrollTrigger'), searchEl: $('fileSearchInput'), tierEl: $('tierFilter'), sortEl: $('sortFilter'),
+          matchedEl: $('matchedFilesMeta'), card: { activeTag: false }, empty: 'NO ASSOCIATED PROTOCOLS MATCH YOUR CRITERIA.' });
+      } catch (err) {
+        console.error(err);
+        $('associatedFilesGrid').innerHTML = H.errorBox('Unable to load this tag.');
+      }
+    });
+
+    function showEmpty(title, text) {
+      document.querySelector('.container').innerHTML = `
+        <div class="empty-state"><h2 style="color:var(--crimson-lust); font-family:var(--font-display); margin-bottom:1rem;">${esc(title)}</h2>
+          <p>${esc(text)}</p><br><a href="tags.html" class="back-nav">← RETURN TO ALL TAGS</a></div>`;
+    }
+  </script>
+</body>
+</html>
