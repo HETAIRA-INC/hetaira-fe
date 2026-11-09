@@ -583,6 +583,8 @@
     .link-row { display: flex; flex-wrap: wrap; gap: .8rem; margin: 1rem 0; }
     .cl-date { color: var(--cyber-cyan); } .cl-var { color: var(--neon-pink); }
     a.hud-badge-tag, a.hud-badge-trigger { text-decoration: none; }
+    .hud-badge-trigger.installed { box-shadow: 0 0 10px rgba(255, 170, 0, .45); }
+    .description-box.note { margin-top: .9rem; } .description-box.note .section-heading { margin-bottom: .4rem; }
     .detail-section { margin-top: 2rem; border-top: 1px dashed rgba(255, 0, 127, .25); padding-top: .5rem; }
     .detail-section .rail .card-cover-wrapper { height: 170px; }
   </style>
@@ -643,6 +645,11 @@
     function render(item, cat) {
       const row = item._row;
       const variants = cat.rows.filter(r => r.artistUuid === row.artistUuid && r.id === row.id);
+      const det = item.details || {};
+      const detText = k => (Array.isArray(det[k]) ? det[k].join(', ') : String(det[k] || ''));
+      const DETAIL_BOXES = [['SETTING', 'setting'], ['CONSENT', 'consent'], ['D/S DYNAMIC', 'dynamic'], ['EFFECTS', 'effects'], ['BACKGROUND', 'background'], ['ORGASM', 'orgasm'],
+        ['HYPNOSIS STYLE', 'style'], ['LEVEL', 'level'], ['INDUCTION', 'induction'], ['DEEPENER', 'deepener'], ['BODY', 'body'], ['WAKENER', 'wakener'], ['AFTERCARE', 'aftercare']];
+      const installed = new Set((item.triggersInstalled || []).map(t => H.slugify(t)));
       const tones = Array.isArray(item.tone) ? item.tone.join(', ') : String(item.tone || '');
       const changelog = Array.isArray(item.changelog) ? item.changelog : [];
       const audioUrls = item.file ? window.assetUrls(item.file, 'audio') : [];
@@ -706,13 +713,16 @@
               <div class="meta-box"><div class="meta-label">DURATION</div><div class="meta-val">${item.duration ? H.fmtDur(item.duration) : '—'}</div></div>
               <div class="meta-box"><div class="meta-label">RELEASE DATE</div><div class="meta-val">${esc(item.releaseDate ? H.fmtDate(item.releaseDate) : 'UNKNOWN')}</div></div>
               ${tones ? `<div class="meta-box"><div class="meta-label">TONAL SPECTRUM</div><div class="meta-val pink">${esc(tones)}</div></div>` : ''}
+              ${DETAIL_BOXES.filter(([, k]) => detText(k)).map(([label, k]) => `<div class="meta-box"><div class="meta-label">${label}</div><div class="meta-val">${esc(detText(k))}</div></div>`).join('')}
               ${item.album ? `<div class="meta-box"><div class="meta-label">ALBUM</div><div class="meta-val"><a href="${H.albumUrl(row._albumSlug)}">${esc(item.album)}</a>${item.albumTrack ? ` · #${item.albumTrack}` : ''}</div></div>` : ''}
             </div>
             <div class="description-box"><p class="description">${esc(item.description || 'No descriptive payload attached.').replace(/\n/g, '<br>')}</p></div>
+            ${det.instructions ? `<div class="description-box note"><div class="section-heading">// LISTENER INSTRUCTIONS:</div><p class="description">${esc(det.instructions).replace(/\n/g, '<br>')}</p></div>` : ''}
+            ${det.intendedEffect ? `<div class="description-box note"><div class="section-heading">// INTENDED EFFECT:</div><p class="description">${esc(det.intendedEffect).replace(/\n/g, '<br>')}</p></div>` : ''}
             ${row.tag || row.tags.length ? `<div class="section-wrap"><div class="section-heading">// DESCRIPTOR TAGS:</div><div class="badge-collection">
               ${[...new Set([row.tag, ...row.tags].filter(Boolean))].map(t => `<a class="hud-badge-tag" href="${H.tagUrl(t)}">#${esc(t)}</a>`).join('')}</div></div>` : ''}
             ${row.triggers.length ? `<div class="section-wrap"><div class="section-heading">// NEURAL / CONTENT TRIGGERS:</div><div class="badge-collection">
-              ${row.triggers.map(t => `<a class="hud-badge-trigger" href="${H.triggerUrl(t)}">&#9888; ${esc(t)}</a>`).join('')}</div></div>` : ''}
+              ${row.triggers.map(t => `<a class="hud-badge-trigger${installed.has(H.slugify(t)) ? ' installed' : ''}" href="${H.triggerUrl(t)}"${installed.has(H.slugify(t)) ? ' title="Installed by this file"' : ' title="Used in this file"'}>${installed.has(H.slugify(t)) ? '&#9733;' : '&#9888;'} ${esc(t)}</a>`).join('')}</div>${installed.size ? '<div class="muted-note" style="margin-top:.5rem">&#9733; installed by this file &middot; &#9888; used</div>' : ''}</div>` : ''}
             <div class="link-row">
               ${item.file && item.vtt ? `<a href="${H.playerUrl(row)}" class="uplink-btn"><span>&#9654; LISTEN ALONG // SYNCED SUBTITLES</span></a>` : ''}
               ${/^https?:\/\//i.test(item.url || '') ? `<a href="${esc(H.safeUrl(item.url))}" target="_blank" rel="noopener noreferrer" class="uplink-btn"><span>&#10138; ACCESS EXTERNAL SOURCE UPLINK</span></a>` : ''}
