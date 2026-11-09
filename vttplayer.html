@@ -364,6 +364,15 @@
       transform: scale(0.98);
     }
 
+
+    /* Fullscreen: hide the player controls */
+    body.is-fullscreen .hud-controls {
+      opacity: 0 !important;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    body.is-fullscreen { cursor: none; }
+
     /* Small/Landscape Adjustments */
     @media (max-height: 520px) {
       .hud-frame { inset: 8px; }
@@ -667,6 +676,7 @@
     }
 
     let ripplePhase = 0;
+    let spiralAngle = 0;
     function drawHypnoticField() {
       requestAnimationFrame(drawHypnoticField);
       const w = canvas.width = window.innerWidth;
@@ -685,6 +695,34 @@
       ripplePhase += 0.012 + (energy * 0.01);
       const centerX = w / 2;
       const centerY = h / 2;
+
+      // Soft rotating spiral behind the word
+      spiralAngle += 0.007 + (energy * 0.006);
+      const maxR = Math.hypot(w, h) / 2;
+      const turns = 4.5;
+      const arms = 4;
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.lineCap = 'round';
+      for (let arm = 0; arm < arms; arm++) {
+        const armOffset = (arm / arms) * Math.PI * 2;
+        ctx.beginPath();
+        for (let t = 0; t <= 1.0001; t += 0.004) {
+          const theta = t * turns * Math.PI * 2;
+          const rad = t * maxR;
+          const a = theta + armOffset - spiralAngle;
+          const px = Math.cos(a) * rad;
+          const py = Math.sin(a) * rad;
+          if (t === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.strokeStyle = `rgba(255, 255, 255, ${0.05 + energy * 0.04})`;
+        ctx.lineWidth = 22;
+        ctx.stroke();
+        ctx.strokeStyle = `rgba(255, 120, 150, ${0.07 + energy * 0.05})`;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+      ctx.restore();
 
       for (let r = 1; r <= 7; r++) {
         const radius = (r * 65 + Math.sin(ripplePhase + r * 0.8) * 25) * (0.8 + energy * 0.4);
@@ -820,6 +858,19 @@
     fsBtn.addEventListener('click', () => {
       if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
       else if (document.exitFullscreen) document.exitFullscreen();
+    });
+
+    function syncFullscreenState() {
+      const fs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+      document.body.classList.toggle('is-fullscreen', fs);
+      fsBtn.textContent = fs ? 'EXIT FULLSCREEN' : 'FULLSCREEN';
+    }
+    document.addEventListener('fullscreenchange', syncFullscreenState);
+    document.addEventListener('webkitfullscreenchange', syncFullscreenState);
+
+    // With the controls hidden in fullscreen, tap/click anywhere to play/pause (Esc exits fullscreen)
+    document.addEventListener('click', (e) => {
+      if (document.body.classList.contains('is-fullscreen') && !e.target.closest('.selection-modal')) togglePlay();
     });
 
     function resetIdleTimer() {
