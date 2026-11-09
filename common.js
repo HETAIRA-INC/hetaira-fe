@@ -178,7 +178,7 @@
 
   /* ---- links ---- */
   H.detailUrl = r => `detailed.html?aid=${encodeURIComponent(r.artistUuid)}&id=${encodeURIComponent(r.uuid)}`;
-  H.playerUrl = r => `vttplayer.html?artist=${encodeURIComponent(r.artistUuid)}&uuid=${encodeURIComponent(r.uuid)}`;
+  H.playerUrl = r => `vttplayer.html?artist=${encodeURIComponent(r.artistUuid)}&uuid=${encodeURIComponent(r.uuid)}&ambient=off`;
   H.artistUrl = a => `artist.html?a=${encodeURIComponent(a.slug)}`;
   H.albumUrl = slug => `album.html?album=${encodeURIComponent(slug)}`;
   H.tagUrl = label => `tag.html?tag=${encodeURIComponent(H.slugify(label))}`;

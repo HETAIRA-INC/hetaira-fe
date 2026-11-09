@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-    <title>SAMARITAN // RESONANCE PLAYER</title>
+    <title>HETAIRA SPIRAL // RESONANCE PLAYER</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -24,6 +24,7 @@
         --zen-white: #f3f6fa;
         --muted-gray: rgba(255, 255, 255, 0.4);
         --hud-border: rgba(255, 255, 255, 0.08);
+        --sd-spiral-duration: 2.8s;
       }
 
       * {
@@ -48,13 +49,13 @@
         font-family: "Outfit", sans-serif;
       }
 
-      /* Ambient Canvas */
+      /* Ambient Wave Canvas */
       #ambientCanvas {
         position: absolute;
         inset: 0;
         width: 100%;
         height: 100%;
-        z-index: 1;
+        z-index: 3; /* in front of the spiral */
         pointer-events: none;
       }
 
@@ -63,11 +64,51 @@
         inset: 0;
         background: radial-gradient(
           circle at center,
-          transparent 30%,
-          rgba(0, 0, 0, 0.8) 100%
+          transparent 20%,
+          rgba(0, 0, 0, 0.85) 100%
         );
         pointer-events: none;
         z-index: 2;
+      }
+
+      /* Hypnotic Red Spiral Stage */
+      .spiral-stage {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: max(145vw, 145vh);
+        height: max(145vw, 145vh);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        z-index: 1; /* behind the ambient lines/circles */
+        opacity: 0.38; /* Light subtle spiral behind the text */
+        transition: opacity 0.8s ease;
+      }
+
+      #spiralCanvas {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        animation: sd-spiral-rotate var(--sd-spiral-duration, 2.8s) linear
+          infinite;
+        animation-play-state: paused;
+        will-change: transform;
+      }
+
+      .spiral-spinning #spiralCanvas {
+        animation-play-state: running;
+      }
+
+      @keyframes sd-spiral-rotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(-360deg);
+        }
       }
 
       /* Framing Brackets */
@@ -78,7 +119,7 @@
         border: 1px solid var(--hud-border);
         border-radius: 4px;
         z-index: 5;
-        transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
       .corner {
@@ -125,7 +166,9 @@
         letter-spacing: 3px;
         color: var(--muted-gray);
         z-index: 6;
-        transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1);
+        transition:
+          opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+          transform 0.5s ease;
       }
 
       .system-badge {
@@ -174,8 +217,9 @@
         line-height: 1;
         white-space: nowrap;
         text-shadow:
-          0 0 35px rgba(255, 255, 255, 0.3),
-          0 0 80px var(--samaritan-deep-glow);
+          0 0 25px rgba(0, 0, 0, 0.9),
+          0 0 45px rgba(0, 0, 0, 0.8),
+          0 0 70px var(--samaritan-deep-glow);
         transition:
           transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
           filter 0.28s ease,
@@ -197,7 +241,7 @@
         border-left: 12px solid transparent;
         border-right: 12px solid transparent;
         border-bottom: 22px solid var(--samaritan-crimson);
-        filter: drop-shadow(0 0 14px var(--samaritan-crimson));
+        filter: drop-shadow(0 0 16px var(--samaritan-crimson));
         animation: hypnoticFloat 3.8s ease-in-out infinite alternate;
         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       }
@@ -227,18 +271,65 @@
         z-index: 20;
         font-family: "Space Grotesk", monospace;
         transition:
-          opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
-          transform 1s ease;
+          opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+          transform 0.5s ease;
       }
 
       .autohide {
-        opacity: 0.05 !important;
-        transform: translateY(6px);
+        opacity: 0 !important;
+        pointer-events: none !important;
+        transform: translateY(14px);
       }
 
-      body:hover .autohide {
-        opacity: 1 !important;
+      /* Fullscreen Auto-hide Behavior */
+      :fullscreen,
+      :-webkit-full-screen {
+        cursor: default;
+      }
+
+      :fullscreen.idle-hidden,
+      :-webkit-full-screen.idle-hidden {
+        cursor: none;
+      }
+
+      :fullscreen .hud-controls,
+      :-webkit-full-screen .hud-controls {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(20px);
+      }
+
+      :fullscreen .hud-header,
+      :-webkit-full-screen .hud-header {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-20px);
+      }
+
+      :fullscreen .hud-frame,
+      :-webkit-full-screen .hud-frame {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      :fullscreen.controls-active .hud-controls,
+      :-webkit-full-screen.controls-active .hud-controls {
+        opacity: 1;
+        pointer-events: auto;
         transform: translateY(0);
+      }
+
+      :fullscreen.controls-active .hud-header,
+      :-webkit-full-screen.controls-active .hud-header {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
+
+      :fullscreen.controls-active .hud-frame,
+      :-webkit-full-screen.controls-active .hud-frame {
+        opacity: 1;
+        pointer-events: none;
       }
 
       .playback-group {
@@ -411,41 +502,6 @@
         transform: scale(0.98);
       }
 
-      /* Light Spiral (behind the word) */
-      .spiral-wrap {
-        position: absolute;
-        inset: 0;
-        overflow: hidden;
-        z-index: 2;
-        pointer-events: none;
-      }
-      #spiralCanvas {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%) rotate(0deg);
-        opacity: 0.55;
-        animation: spiralRotate 6s linear infinite;
-        animation-play-state: paused;
-      }
-      #spiralCanvas.spinning {
-        animation-play-state: running;
-      }
-      @keyframes spiralRotate {
-        to {
-          transform: translate(-50%, -50%) rotate(-360deg);
-        }
-      }
-
-      /* Fullscreen: hide player controls */
-      :fullscreen .hud-controls,
-      :fullscreen .hud-header {
-        display: none !important;
-      }
-      :fullscreen {
-        cursor: none;
-      }
-
       /* Small/Landscape Adjustments */
       @media (max-height: 520px) {
         .hud-frame {
@@ -480,9 +536,15 @@
     </style>
   </head>
   <body>
-    <canvas id="ambientCanvas"></canvas>
-    <div class="spiral-wrap"><canvas id="spiralCanvas"></canvas></div>
-    <div class="vignette"></div>
+    <!-- Hypnotic Red Spiral Stage -->
+    <div class="spiral-stage" id="spiralStage">
+      <canvas id="spiralCanvas"></canvas>
+    </div>
+
+    <div>
+      <canvas id="ambientCanvas"></canvas>
+      <div class="vignette"></div>
+    </div>
 
     <!-- HUD Framing -->
     <div class="hud-frame" id="hudFrame">
@@ -503,7 +565,6 @@
     <!-- Hypnotic Center Display -->
     <div class="viewport-center">
       <div class="samaritan-word" id="wordDisplay">INITIALIZING</div>
-      <div class="samaritan-marker" id="marker"></div>
     </div>
 
     <!-- Glass Controls Dock -->
@@ -521,9 +582,6 @@
           </div>
           <div class="time-readout">
             <span id="currentTime">00:00.0</span>
-            <span id="threatStatus" style="color: var(--samaritan-crimson)"
-              >FLOW STATE: LOCKED</span
-            >
             <span id="totalTime">00:00.0</span>
           </div>
         </div>
@@ -581,6 +639,8 @@
       const trackTitleDisp = document.getElementById("trackTitle");
       const canvas = document.getElementById("ambientCanvas");
       const ctx = canvas.getContext("2d");
+      const spiralStage = document.getElementById("spiralStage");
+      const spiralCanvas = document.getElementById("spiralCanvas");
 
       // Auto-hide References
       const hudFrame = document.getElementById("hudFrame");
@@ -601,10 +661,107 @@
       let transcript = [];
 
       // ==========================================
+      // URL OPTIONS: ?spiral=off  ?ambient=off  (also 0 / false / no / hide)
+      // ==========================================
+      const _q = new URLSearchParams(window.location.search);
+      const isOff = (k) =>
+        ["0", "off", "false", "no", "hide", "none"].includes(
+          (_q.get(k) || "").toLowerCase(),
+        );
+      const SPIRAL_ON = !isOff("spiral");
+      const AMBIENT_ON = !isOff("ambient");
+      if (!SPIRAL_ON) spiralStage.style.display = "none";
+      if (!AMBIENT_ON) canvas.style.display = "none";
+
+      // ==========================================
+      // HYPNOTIC RED SPIRAL GENERATION (WIDENING BANDS)
+      // ==========================================
+      function generateRedSpiral() {
+        const size = 1600;
+        spiralCanvas.width = size;
+        spiralCanvas.height = size;
+        const sCtx = spiralCanvas.getContext("2d");
+        const imgData = sCtx.createImageData(size, size);
+        const data = imgData.data;
+
+        const cx = size / 2;
+        const cy = size / 2;
+        const R = cx;
+        const TURNS = 11; // rings from centre to edge
+        const POWER = 1.5; // >1 = tight core, bands widen outward
+        const invPower = 1 / POWER;
+        const invTwoPi = 1 / (2 * Math.PI);
+
+        let idx = 0;
+        for (let y = 0; y < size; y++) {
+          const dy = y - cy;
+          const dy2 = dy * dy;
+          for (let x = 0; x < size; x++) {
+            const dx = x - cx;
+            const r = Math.sqrt(dx * dx + dy2);
+
+            if (r > R) {
+              data[idx + 3] = 0;
+              idx += 4;
+              continue;
+            }
+
+            const theta = Math.atan2(dy, dx);
+            const normTheta = (theta + Math.PI) * invTwoPi;
+            // phase (in turns) grows with r^(1/POWER) -> pitch grows outward
+            const phase = TURNS * Math.pow(r / R, invPower);
+            const f = (((phase - normTheta) % 1) + 1) % 1;
+
+            // Equal-width band and gap (50/50), thinning slightly at the core
+            const taper = Math.min(1, Math.pow(r / 40, 0.6));
+            const halfWidth = 0.12 + 0.13 * taper; // max 0.25 = 50%
+            const dist = Math.abs(f - 0.25);
+            const distToEdge = halfWidth - dist;
+
+            // Screen-space antialiasing from the local phase gradient
+            const dPhaseDr =
+              (TURNS * invPower * Math.pow(Math.max(r, 1), invPower - 1)) /
+              Math.pow(R, invPower);
+            const grad = Math.sqrt(
+              dPhaseDr * dPhaseDr + Math.pow(invTwoPi / Math.max(r, 1.2), 2),
+            );
+            const edgeWidth = Math.max(0.002, grad * 0.85);
+            const bandT = Math.max(
+              0,
+              Math.min(1, 0.5 + distToEdge / edgeWidth),
+            );
+
+            // Small fade only at the very rim of the circle
+            const edgeFade =
+              r > 0.94 * R ? Math.max(0, (R - r) / (0.06 * R)) : 1;
+
+            // Colour ramps with radius: deep red core -> bright crimson edge
+            const t = Math.pow(r / R, 0.8);
+            const redVal = 70 + 175 * t;
+            const greenVal = 4 + 34 * t;
+            const blueVal = 18 + 62 * t;
+
+            data[idx] = Math.round(
+              (redVal * bandT + 4 * (1 - bandT)) * edgeFade,
+            );
+            data[idx + 1] = Math.round(
+              (greenVal * bandT + 3 * (1 - bandT)) * edgeFade,
+            );
+            data[idx + 2] = Math.round(
+              (blueVal * bandT + 8 * (1 - bandT)) * edgeFade,
+            );
+            data[idx + 3] = Math.round(255 * edgeFade);
+
+            idx += 4;
+          }
+        }
+        sCtx.putImageData(imgData, 0, 0);
+      }
+      if (SPIRAL_ON) generateRedSpiral();
+
+      // ==========================================
       // DATA FETCHING & INITIALIZATION
       // ==========================================
-
-      // Params end up in URLs: only real UUIDs are accepted (anything else opens the picker).
       const UUID_RE = /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
       const urlParams = new URLSearchParams(window.location.search);
       const uuidParam = urlParams.get("uuid") || urlParams.get("id");
@@ -632,7 +789,6 @@
       });
 
       async function fetchRecord(artist, uuid) {
-        // full record: hetaira-db/<artist>/records/<uuid>.json
         if (artist && uuid) {
           try {
             const res = await fetch(
@@ -643,7 +799,6 @@
             if (res.ok) return await res.json();
           } catch (e) {}
         }
-        // no artist in the link: find the record in the public index
         try {
           const res = await fetch(
             window.resolveDbUrl("summary-all.json", { fresh: true }),
@@ -665,8 +820,6 @@
 
           trackTitleDisp.textContent = item?.title || "VISUALIZER PROTOCOL";
 
-          // Audio: hetaira-c1, then c2, then c3 (same layout). crossOrigin is required: the analyser below
-          // would otherwise receive silence from cross-origin media and mute the sound.
           const audioFile =
             (typeof item?.file === "string" && item.file) ||
             `${resolvedArtist}/audio/${uuid}.mp3`;
@@ -675,7 +828,6 @@
           audio.crossOrigin = "anonymous";
           audio.addEventListener("error", () => {
             if (mirror + 1 < audioUrls.length) {
-              // try the next repo, keep the position
               const t = audio.currentTime,
                 wasPlaying = !audio.paused;
               audio.src = audioUrls[++mirror];
@@ -686,7 +838,6 @@
             }
           });
 
-          // Subtitles: the record's `vtt` path (hetaira-vtt/<artist>/vtt/<uuid>.vtt); a flag/empty value falls back to that convention
           const vttPath =
             typeof item?.vtt === "string" && item.vtt
               ? item.vtt
@@ -702,7 +853,6 @@
             transitionWord("VTT ERROR");
           }
 
-          // Initialize audio regardless of VTT success
           if (audioUrls.length) audio.src = audioUrls[0];
           else transitionWord("AUDIO ERROR");
         } catch (error) {
@@ -714,7 +864,6 @@
       // ==========================================
       // VTT PARSING ENGINE
       // ==========================================
-
       function timeToSeconds(timeStr) {
         const parts = timeStr.split(/[:.,]/);
         let hours = 0,
@@ -808,7 +957,6 @@
       // ==========================================
       // AUDIO & VISUAL LOGIC
       // ==========================================
-
       function setupAudioNodes() {
         if (audioCtx) return;
         try {
@@ -838,6 +986,9 @@
           let sum = 0;
           for (let i = 0; i < buffer.length; i++) sum += buffer[i];
           energy = Math.max(0.12, sum / buffer.length / 95);
+
+          // Softly pulse the spiral opacity with audio resonance
+          spiralStage.style.opacity = (0.35 + energy * 0.22).toFixed(3);
         }
 
         ripplePhase += 0.012 + energy * 0.01;
@@ -875,15 +1026,15 @@
           ctx.stroke();
         }
       }
-      drawHypnoticField();
+      if (AMBIENT_ON) drawHypnoticField();
 
       function transitionWord(word) {
         wordDisplay.classList.add("transitioning");
-        marker.style.transform = "translateY(16px) scale(1.1)";
+        if (marker) marker.style.transform = "translateY(16px) scale(1.1)";
         setTimeout(() => {
           wordDisplay.textContent = word;
           wordDisplay.classList.remove("transitioning");
-          marker.style.transform = "translateY(8px) scale(1)";
+          if (marker) marker.style.transform = "translateY(8px) scale(1)";
         }, 160);
       }
 
@@ -899,17 +1050,31 @@
         if (audio.paused) {
           try {
             await audio.play();
-            playBtn.textContent = "❚❚ PAUSE";
           } catch (e) {
             console.warn("Audio play blocked or failed:", e);
           }
         } else {
           audio.pause();
-          playBtn.textContent = "▶ PLAY";
         }
       }
 
       playBtn.addEventListener("click", togglePlay);
+
+      audio.addEventListener("play", () => {
+        spiralStage.classList.add("spiral-spinning");
+        playBtn.textContent = "❚❚ PAUSE";
+      });
+
+      audio.addEventListener("pause", () => {
+        spiralStage.classList.remove("spiral-spinning");
+        playBtn.textContent = "▶ PLAY";
+      });
+
+      audio.addEventListener("ended", () => {
+        spiralStage.classList.remove("spiral-spinning");
+        playBtn.textContent = "▶ PLAY";
+        lastRenderedIndex = -1;
+      });
 
       audio.addEventListener("loadedmetadata", () => {
         totalTimeDisp.textContent = formatTime(audio.duration);
@@ -920,6 +1085,7 @@
         console.warn("Audio failed to load:", audio.src);
         playBtn.textContent = "FEED ERROR";
         transitionWord("AUDIO ERROR");
+        spiralStage.classList.remove("spiral-spinning");
       });
 
       audio.addEventListener("timeupdate", () => {
@@ -943,11 +1109,6 @@
           transitionWord(transcript[activeIndex].word);
           lastRenderedIndex = activeIndex;
         }
-      });
-
-      audio.addEventListener("ended", () => {
-        playBtn.textContent = "▶ PLAY";
-        lastRenderedIndex = -1;
       });
 
       function formatTime(secs) {
@@ -986,83 +1147,80 @@
         lastRenderedIndex = -1;
       });
 
+      // ==========================================
+      // FULLSCREEN & CONTROLS AUTO-HIDE LOGIC
+      // ==========================================
+      function isFullscreen() {
+        return !!(
+          document.fullscreenElement || document.webkitFullscreenElement
+        );
+      }
+
       fsBtn.addEventListener("click", () => {
-        if (!document.fullscreenElement)
+        if (!isFullscreen()) {
           document.documentElement.requestFullscreen().catch(() => {});
-        else if (document.exitFullscreen) document.exitFullscreen();
+        } else {
+          if (document.exitFullscreen) document.exitFullscreen();
+        }
       });
 
       function resetIdleTimer() {
-        hudControls.classList.remove("autohide");
-        hudHeader.classList.remove("autohide");
-        hudFrame.classList.remove("autohide");
         clearTimeout(idleTimer);
+
+        if (isFullscreen()) {
+          document.documentElement.classList.add("controls-active");
+          document.documentElement.classList.remove("idle-hidden");
+        } else {
+          hudControls.classList.remove("autohide");
+          hudHeader.classList.remove("autohide");
+          hudFrame.classList.remove("autohide");
+        }
+
+        // Hide faster in fullscreen (2s) vs windowed (3.5s)
+        const timeout = isFullscreen() ? 2000 : 3500;
         idleTimer = setTimeout(() => {
-          if (!audio.paused) {
-            hudControls.classList.add("autohide");
-            hudHeader.classList.add("autohide");
-            hudFrame.classList.add("autohide");
+          if (!audio.paused || isFullscreen()) {
+            if (isFullscreen()) {
+              document.documentElement.classList.remove("controls-active");
+              document.documentElement.classList.add("idle-hidden");
+            } else {
+              hudControls.classList.add("autohide");
+              hudHeader.classList.add("autohide");
+              hudFrame.classList.add("autohide");
+            }
           }
-        }, 3500);
+        }, timeout);
       }
+
+      document.addEventListener("fullscreenchange", () => {
+        if (isFullscreen()) {
+          fsBtn.textContent = "EXIT FS";
+          resetIdleTimer();
+        } else {
+          fsBtn.textContent = "FULLSCREEN";
+          document.documentElement.classList.remove(
+            "controls-active",
+            "idle-hidden",
+          );
+          hudControls.classList.remove("autohide");
+          hudHeader.classList.remove("autohide");
+          hudFrame.classList.remove("autohide");
+        }
+      });
+
       window.addEventListener("mousemove", resetIdleTimer);
       window.addEventListener("touchstart", resetIdleTimer);
 
-      // ==========================================
-      // LIGHT SPIRAL
-      // ==========================================
-      const spiralCanvas = document.getElementById("spiralCanvas");
-      function drawSpiral() {
-        const size = Math.ceil(
-          Math.hypot(window.innerWidth, window.innerHeight),
-        );
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        spiralCanvas.width = size * dpr;
-        spiralCanvas.height = size * dpr;
-        spiralCanvas.style.width = size + "px";
-        spiralCanvas.style.height = size + "px";
-        const c = spiralCanvas.getContext("2d");
-        c.scale(dpr, dpr);
-        c.clearRect(0, 0, size, size);
-        const cx = size / 2,
-          cy = size / 2,
-          maxR = size / 2;
-        const arms = 6,
-          turns = 3.2;
-        for (let a = 0; a < arms; a++) {
-          const offset = (a / arms) * Math.PI * 2;
-          const steps = 400;
-          c.beginPath();
-          for (let i = 0; i <= steps; i++) {
-            const t = i / steps;
-            const r = t * maxR;
-            const ang = offset + t * turns * Math.PI * 2;
-            const x = cx + Math.cos(ang) * r;
-            const y = cy + Math.sin(ang) * r;
-            i ? c.lineTo(x, y) : c.moveTo(x, y);
-          }
-          const g = c.createRadialGradient(cx, cy, 0, cx, cy, maxR);
-          g.addColorStop(0, "rgba(255,255,255,0.0)");
-          g.addColorStop(0.15, "rgba(255,255,255,0.35)");
-          g.addColorStop(1, "rgba(255,255,255,0.08)");
-          c.strokeStyle = g;
-          c.lineWidth = Math.max(10, size * 0.018);
-          c.lineCap = "round";
-          c.stroke();
+      // Double-click background to toggle fullscreen
+      window.addEventListener("dblclick", (e) => {
+        if (e.target.closest(".hud-controls, .selection-modal, button, input"))
+          return;
+        if (!isFullscreen()) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          if (document.exitFullscreen) document.exitFullscreen();
         }
-      }
-      drawSpiral();
-      window.addEventListener("resize", drawSpiral);
-      audio.addEventListener("play", () =>
-        spiralCanvas.classList.add("spinning"),
-      );
-      audio.addEventListener("pause", () =>
-        spiralCanvas.classList.remove("spinning"),
-      );
-      audio.addEventListener("ended", () =>
-        spiralCanvas.classList.remove("spinning"),
-      );
-      if (!audio.paused) spiralCanvas.classList.add("spinning");
+      });
     </script>
   </body>
 </html>

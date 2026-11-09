@@ -1,689 +1,928 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#060308">
-  <title>HETAIRA.EROS // DOSSIER HUD</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="stylesheet.css">
-  <style>
-    :root {
-      --bg: #060308;
-      --card-bg: rgba(18, 9, 21, 0.92);
-      --card-sub: rgba(30, 14, 34, 0.65);
-      --text-muted: #a68c9a;
-      --border-pink: rgba(255, 0, 127, 0.35);
-      --border-cyan: rgba(0, 240, 255, 0.35);
-    }
-    
-    body {
-      background-color: var(--bg);
-      background-image: radial-gradient(circle at 10% 20%, rgba(255, 0, 127, 0.08) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(0, 240, 255, 0.06) 0%, transparent 40%), linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-      background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
-      color: var(--text-main);
-      font-family: var(--font-body);
-      min-height: 100vh;
-      padding: 0 1.25rem 2.5rem;
-      position: relative;
-    }
-    
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
-      opacity: 0.7;
-      z-index: 999;
-    }
-    
-    .detail-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      background: var(--card-bg);
-      border: 1px solid var(--border-pink);
-      box-shadow: 0 0 50px rgba(255, 0, 127, 0.18), inset 0 0 20px rgba(255, 0, 127, 0.05);
-      padding: 2.5rem;
-      backdrop-filter: blur(25px);
-      position: relative;
-      clip-path: polygon(0 0, calc(100% - 25px) 0, 100% 25px, 100% 100%, 25px 100%, 0 calc(100% - 25px));
-    }
-    
-    .hud-topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(255, 0, 127, 0.2);
-      padding-bottom: 1.25rem;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-    
-    .back-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-family: var(--font-display);
-      font-size: 0.8rem;
-      color: var(--blush-glow);
-      text-decoration: none;
-      letter-spacing: 2px;
-      transition: all 0.2s ease;
-      background: rgba(255, 0, 127, 0.08);
-      border: 1px solid var(--border-pink);
-      padding: 6px 14px;
-    }
-    
-    .back-btn:hover {
-      color: #fff;
-      background: var(--neon-pink);
-      box-shadow: 0 0 15px var(--neon-pink);
-      transform: translateX(-3px);
-    }
-    
-    .hud-status-badge {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      letter-spacing: 1.5px;
-      color: var(--cyber-cyan);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      background: #00ff66;
-      border-radius: 50%;
-      box-shadow: 0 0 10px #00ff66;
-      animation: pulse 1.6s infinite ease-in-out;
-    }
-    
-    @keyframes pulse { 0%, 100% { opacity: 0.4; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.15); } }
-    
-    .hud-grid {
-      display: grid;
-      grid-template-columns: 380px 1fr;
-      gap: 2.5rem;
-    }
-    
-    .media-col {
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-    }
-    
-    .cover-frame {
-      width: 100%;
-      height: 380px;
-      background: #120715;
-      border: 1px solid var(--neon-pink);
-      box-shadow: 0 0 25px rgba(255, 0, 127, 0.25);
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .cover-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.4s ease;
-    }
-    
-    .cover-frame:hover .cover-img {
-      transform: scale(1.03);
-    }
-    
-    .tier-overlay {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      background: rgba(0, 0, 0, 0.85);
-      border: 1px solid var(--gold-tier);
-      color: var(--gold-tier);
-      font-family: var(--font-display);
-      font-size: 0.7rem;
-      padding: 3px 8px;
-      letter-spacing: 1.5px;
-      z-index: 2;
-    }
-    
-    .audio-console {
-      background: var(--card-sub);
-      border: 1px solid var(--border-pink);
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.9rem;
-      position: relative;
-    }
-    
-    .equalizer-canvas {
-      width: 100%;
-      height: 52px;
-      background: rgba(0, 0, 0, 0.6);
-      border: 1px solid rgba(255, 0, 127, 0.2);
-    }
-    
-    .scrubber-wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      color: var(--cyber-cyan);
-    }
-    
-    .cyber-range {
-      flex-grow: 1;
-      height: 5px;
-      accent-color: var(--neon-pink);
-      cursor: pointer;
-    }
-    
-    .audio-controls-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    
-    .playback-group {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-    
-    .cyber-btn {
-      background: rgba(255, 0, 127, 0.1);
-      border: 1px solid var(--border-pink);
-      color: var(--blush-glow);
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      padding: 6px 10px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    
-    .cyber-btn:hover {
-      background: var(--neon-pink);
-      color: #fff;
-      box-shadow: 0 0 10px var(--neon-pink);
-    }
-    
-    .cyber-btn.active {
-      background: var(--neon-pink);
-      color: #fff;
-    }
-    
-    .play-btn {
-      background: linear-gradient(90deg, var(--crimson-lust), var(--neon-pink));
-      border: none;
-      color: #fff;
-      font-family: var(--font-display);
-      font-size: 0.85rem;
-      padding: 8px 18px;
-      letter-spacing: 2px;
-      cursor: pointer;
-      clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
-      transition: all 0.2s ease;
-    }
-    
-    .play-btn:hover {
-      box-shadow: 0 0 18px var(--neon-pink);
-      transform: translateY(-1px);
-    }
-    
-    .volume-wrap {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    
-    .volume-slider {
-      width: 70px;
-      accent-color: var(--cyber-cyan);
-      cursor: pointer;
-    }
-    
-    .info-col {
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .uuid-tag-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.5rem;
-      background: rgba(0, 240, 255, 0.05);
-      border-left: 2px solid var(--cyber-cyan);
-      padding: 6px 10px;
-    }
-    
-    .uuid-tag {
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      color: var(--cyber-cyan);
-    }
-    
-    .copy-btn {
-      background: transparent;
-      border: 1px solid var(--border-cyan);
-      color: var(--cyber-cyan);
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      padding: 2px 8px;
-      cursor: pointer;
-      letter-spacing: 1px;
-      transition: all 0.2s;
-    }
-    
-    .copy-btn:hover {
-      background: var(--cyber-cyan);
-      color: #000;
-    }
-    
-    .title {
-      font-family: var(--font-display);
-      font-size: clamp(1.8rem, 3.5vw, 2.5rem);
-      font-weight: 800;
-      color: #fff;
-      line-height: 1.15;
-      margin-top: 0.4rem;
-      margin-bottom: 0.4rem;
-      text-shadow: 0 0 20px rgba(255, 0, 127, 0.4);
-    }
-    
-    .protocol-tag-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
-    }
-    
-    .primary-tag {
-      font-family: var(--font-display);
-      font-size: 0.85rem;
-      color: var(--blush-glow);
-      letter-spacing: 2px;
-    }
-    
-    .variant-badge-active {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      padding: 2px 8px;
-      background: rgba(255, 0, 127, 0.15);
-      border: 1px solid var(--neon-pink);
-      color: #fff;
-    }
-    
-    .variants-card {
-      background: rgba(255, 0, 127, 0.04);
-      border: 1px solid rgba(255, 0, 127, 0.25);
-      padding: 1rem 1.25rem;
-      margin-bottom: 1.8rem;
-      position: relative;
-    }
-    
-    .variants-card::before {
-      content: "FORKED PROTOCOL VARIANTS";
-      position: absolute;
-      top: -9px;
-      left: 14px;
-      font-family: var(--font-display);
-      font-size: 0.65rem;
-      color: var(--cyber-cyan);
-      background: var(--bg);
-      padding: 0 6px;
-      letter-spacing: 1.5px;
-    }
-    
-    .variant-pill-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 4px;
-    }
-    
-    .variant-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(18, 9, 21, 0.8);
-      border: 1px solid var(--border-pink);
-      padding: 8px 14px;
-      color: var(--text-main);
-      text-decoration: none;
-      font-family: var(--font-mono);
-      font-size: 0.82rem;
-      transition: all 0.25s ease;
-      cursor: pointer;
-    }
-    
-    .variant-pill:hover {
-      border-color: var(--cyber-cyan);
-      box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
-      color: #fff;
-      transform: translateY(-2px);
-    }
-    
-    .variant-pill.is-active {
-      background: linear-gradient(135deg, rgba(255, 0, 127, 0.2), rgba(0, 240, 255, 0.15));
-      border-color: var(--neon-pink);
-      box-shadow: 0 0 15px rgba(255, 0, 127, 0.35);
-      color: #fff;
-    }
-    
-    .variant-pill-tag {
-      font-family: var(--font-display);
-      font-size: 0.7rem;
-      background: var(--crimson-lust);
-      color: #fff;
-      padding: 2px 6px;
-    }
-    
-    .variant-pill.is-active .variant-pill-tag {
-      background: var(--neon-pink);
-    }
-    
-    .meta-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-      gap: 0.85rem;
-      margin-bottom: 1.8rem;
-    }
-    
-    .meta-box {
-      background: rgba(255, 0, 127, 0.03);
-      border-left: 3px solid var(--crimson-lust);
-      padding: 0.75rem 0.9rem;
-      border-top: 1px solid rgba(255, 0, 127, 0.1);
-      border-right: 1px solid rgba(255, 0, 127, 0.1);
-      border-bottom: 1px solid rgba(255, 0, 127, 0.1);
-    }
-    
-    .meta-label {
-      font-family: var(--font-display);
-      font-size: 0.68rem;
-      color: var(--text-muted);
-      letter-spacing: 1px;
-      margin-bottom: 2px;
-    }
-    
-    .meta-val {
-      font-family: var(--font-mono);
-      font-size: 0.95rem;
-      color: #fff;
-      font-weight: 700;
-    }
-    
-    .description-box {
-      background: rgba(0, 0, 0, 0.25);
-      border-left: 2px solid var(--border-pink);
-      padding: 1.1rem 1.25rem;
-      margin-bottom: 1.8rem;
-    }
-    
-    .description {
-      font-size: 1.1rem;
-      line-height: 1.65;
-      color: #e2e8f0;
-      white-space: pre-line;
-    }
-    
-    .section-wrap {
-      margin-bottom: 1.25rem;
-    }
-    
-    .section-heading {
-      font-family: var(--font-display);
-      font-size: 0.72rem;
-      letter-spacing: 1.5px;
-      color: var(--blush-glow);
-      margin-bottom: 0.5rem;
-    }
-    
-    .badge-collection {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    
-    .hud-badge-tag {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      padding: 4px 9px;
-      background: rgba(0, 240, 255, 0.08);
-      border: 1px solid var(--border-cyan);
-      color: #e2f8ff;
-    }
-    
-    .hud-badge-trigger {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      padding: 4px 9px;
-      background: rgba(255, 0, 85, 0.1);
-      border: 1px solid var(--neon-pink);
-      color: #ffe6ef;
-    }
-    
-    .changelog-card {
-      margin-top: 1.5rem;
-      border-top: 1px dashed rgba(255, 0, 127, 0.3);
-      padding-top: 1.2rem;
-    }
-    
-    .changelog-row {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
-    
-    .uplink-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 1rem;
-      font-family: var(--font-display);
-      font-size: 0.8rem;
-      letter-spacing: 1.5px;
-      padding: 8px 16px;
-      background: rgba(0, 240, 255, 0.08);
-      border: 1px solid var(--cyber-cyan);
-      color: var(--cyber-cyan);
-      text-decoration: none;
-      transition: all 0.2s;
-    }
-    
-    .uplink-btn:hover {
-      background: var(--cyber-cyan);
-      color: #000;
-      box-shadow: 0 0 15px var(--cyber-cyan);
-    }
-    
-    .downlink-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 1rem;
-      font-family: var(--font-display);
-      font-size: 0.8rem;
-      letter-spacing: 1.5px;
-      padding: 8px 16px;
-      background: rgba(234, 0, 255, 0.08);
-      border: 1px solid var(--crimson-lust);
-      color: var(--crimson-lust);
-      text-decoration: none;
-      transition: all 0.2s;
-    }
-    
-    .downlink-btn:hover {
-      background: var(--crimson-lust);
-      color: #000;
-      box-shadow: 0 0 15px var(--crimson-lust);
-    }
-    
-    #hudToast {
-      position: fixed;
-      bottom: 25px;
-      right: 25px;
-      background: #000;
-      border: 1px solid var(--cyber-cyan);
-      color: var(--cyber-cyan);
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-      padding: 10px 18px;
-      box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.3s ease;
-      pointer-events: none;
-      z-index: 1000;
-    }
-    
-    #hudToast.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    
-    @media (max-width: 950px) {
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#060308" />
+    <title>HETAIRA.EROS // DOSSIER HUD</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="stylesheet.css" />
+    <style>
+      :root {
+        --bg: #060308;
+        --card-bg: rgba(18, 9, 21, 0.92);
+        --card-sub: rgba(30, 14, 34, 0.65);
+        --text-muted: #a68c9a;
+        --border-pink: rgba(255, 0, 127, 0.35);
+        --border-cyan: rgba(0, 240, 255, 0.35);
+      }
+
+      body {
+        background-color: var(--bg);
+        background-image:
+          radial-gradient(
+            circle at 10% 20%,
+            rgba(255, 0, 127, 0.08) 0%,
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 90% 80%,
+            rgba(0, 240, 255, 0.06) 0%,
+            transparent 40%
+          ),
+          linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+          linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.015) 1px,
+            transparent 1px
+          );
+        background-size:
+          100% 100%,
+          100% 100%,
+          30px 30px,
+          30px 30px;
+        color: var(--text-main);
+        font-family: var(--font-body);
+        min-height: 100vh;
+        padding: 0 1.25rem 2.5rem;
+        position: relative;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0.15),
+          rgba(0, 0, 0, 0.15) 1px,
+          transparent 1px,
+          transparent 2px
+        );
+        opacity: 0.7;
+        z-index: 999;
+      }
+
+      .detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: var(--card-bg);
+        border: 1px solid var(--border-pink);
+        box-shadow:
+          0 0 50px rgba(255, 0, 127, 0.18),
+          inset 0 0 20px rgba(255, 0, 127, 0.05);
+        padding: 2.5rem;
+        backdrop-filter: blur(25px);
+        position: relative;
+        clip-path: polygon(
+          0 0,
+          calc(100% - 25px) 0,
+          100% 25px,
+          100% 100%,
+          25px 100%,
+          0 calc(100% - 25px)
+        );
+      }
+
+      .hud-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 0, 127, 0.2);
+        padding-bottom: 1.25rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--font-display);
+        font-size: 0.8rem;
+        color: var(--blush-glow);
+        text-decoration: none;
+        letter-spacing: 2px;
+        transition: all 0.2s ease;
+        background: rgba(255, 0, 127, 0.08);
+        border: 1px solid var(--border-pink);
+        padding: 6px 14px;
+      }
+
+      .back-btn:hover {
+        color: #fff;
+        background: var(--neon-pink);
+        box-shadow: 0 0 15px var(--neon-pink);
+        transform: translateX(-3px);
+      }
+
+      .hud-status-badge {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        letter-spacing: 1.5px;
+        color: var(--cyber-cyan);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        background: #00ff66;
+        border-radius: 50%;
+        box-shadow: 0 0 10px #00ff66;
+        animation: pulse 1.6s infinite ease-in-out;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.4;
+          transform: scale(0.9);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.15);
+        }
+      }
+
       .hud-grid {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 2.5rem;
+      }
+
+      .media-col {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+      }
+
+      .cover-frame {
+        width: 100%;
+        height: 380px;
+        background: #120715;
+        border: 1px solid var(--neon-pink);
+        box-shadow: 0 0 25px rgba(255, 0, 127, 0.25);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .cover-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+      }
+
+      .cover-frame:hover .cover-img {
+        transform: scale(1.03);
+      }
+
+      .tier-overlay {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: rgba(0, 0, 0, 0.85);
+        border: 1px solid var(--gold-tier);
+        color: var(--gold-tier);
+        font-family: var(--font-display);
+        font-size: 0.7rem;
+        padding: 3px 8px;
+        letter-spacing: 1.5px;
+        z-index: 2;
+      }
+
+      .audio-console {
+        background: var(--card-sub);
+        border: 1px solid var(--border-pink);
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+        position: relative;
+      }
+
+      .equalizer-canvas {
+        width: 100%;
+        height: 52px;
+        background: rgba(0, 0, 0, 0.6);
+        border: 1px solid rgba(255, 0, 127, 0.2);
+      }
+
+      .scrubber-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        color: var(--cyber-cyan);
+      }
+
+      .cyber-range {
+        flex-grow: 1;
+        height: 5px;
+        accent-color: var(--neon-pink);
+        cursor: pointer;
+      }
+
+      .audio-controls-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .playback-group {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .cyber-btn {
+        background: rgba(255, 0, 127, 0.1);
+        border: 1px solid var(--border-pink);
+        color: var(--blush-glow);
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        padding: 6px 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .cyber-btn:hover {
+        background: var(--neon-pink);
+        color: #fff;
+        box-shadow: 0 0 10px var(--neon-pink);
+      }
+
+      .cyber-btn.active {
+        background: var(--neon-pink);
+        color: #fff;
+      }
+
+      .play-btn {
+        background: linear-gradient(
+          90deg,
+          var(--crimson-lust),
+          var(--neon-pink)
+        );
+        border: none;
+        color: #fff;
+        font-family: var(--font-display);
+        font-size: 0.85rem;
+        padding: 8px 18px;
+        letter-spacing: 2px;
+        cursor: pointer;
+        clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+        transition: all 0.2s ease;
+      }
+
+      .play-btn:hover {
+        box-shadow: 0 0 18px var(--neon-pink);
+        transform: translateY(-1px);
+      }
+
+      .volume-wrap {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .volume-slider {
+        width: 70px;
+        accent-color: var(--cyber-cyan);
+        cursor: pointer;
+      }
+
+      .info-col {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .uuid-tag-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        background: rgba(0, 240, 255, 0.05);
+        border-left: 2px solid var(--cyber-cyan);
+        padding: 6px 10px;
+      }
+
+      .uuid-tag {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        color: var(--cyber-cyan);
+      }
+
+      .copy-btn {
+        background: transparent;
+        border: 1px solid var(--border-cyan);
+        color: var(--cyber-cyan);
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        padding: 2px 8px;
+        cursor: pointer;
+        letter-spacing: 1px;
+        transition: all 0.2s;
+      }
+
+      .copy-btn:hover {
+        background: var(--cyber-cyan);
+        color: #000;
+      }
+
+      .title {
+        font-family: var(--font-display);
+        font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+        font-weight: 800;
+        color: #fff;
+        line-height: 1.15;
+        margin-top: 0.4rem;
+        margin-bottom: 0.4rem;
+        text-shadow: 0 0 20px rgba(255, 0, 127, 0.4);
+      }
+
+      .protocol-tag-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+      }
+
+      .primary-tag {
+        font-family: var(--font-display);
+        font-size: 0.85rem;
+        color: var(--blush-glow);
+        letter-spacing: 2px;
+      }
+
+      .variant-badge-active {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        padding: 2px 8px;
+        background: rgba(255, 0, 127, 0.15);
+        border: 1px solid var(--neon-pink);
+        color: #fff;
+      }
+
+      .variants-card {
+        background: rgba(255, 0, 127, 0.04);
+        border: 1px solid rgba(255, 0, 127, 0.25);
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.8rem;
+        position: relative;
+      }
+
+      .variants-card::before {
+        content: "FORKED PROTOCOL VARIANTS";
+        position: absolute;
+        top: -9px;
+        left: 14px;
+        font-family: var(--font-display);
+        font-size: 0.65rem;
+        color: var(--cyber-cyan);
+        background: var(--bg);
+        padding: 0 6px;
+        letter-spacing: 1.5px;
+      }
+
+      .variant-pill-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 4px;
+      }
+
+      .variant-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(18, 9, 21, 0.8);
+        border: 1px solid var(--border-pink);
+        padding: 8px 14px;
+        color: var(--text-main);
+        text-decoration: none;
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        transition: all 0.25s ease;
+        cursor: pointer;
+      }
+
+      .variant-pill:hover {
+        border-color: var(--cyber-cyan);
+        box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+        color: #fff;
+        transform: translateY(-2px);
+      }
+
+      .variant-pill.is-active {
+        background: linear-gradient(
+          135deg,
+          rgba(255, 0, 127, 0.2),
+          rgba(0, 240, 255, 0.15)
+        );
+        border-color: var(--neon-pink);
+        box-shadow: 0 0 15px rgba(255, 0, 127, 0.35);
+        color: #fff;
+      }
+
+      .variant-pill-tag {
+        font-family: var(--font-display);
+        font-size: 0.7rem;
+        background: var(--crimson-lust);
+        color: #fff;
+        padding: 2px 6px;
+      }
+
+      .variant-pill.is-active .variant-pill-tag {
+        background: var(--neon-pink);
+      }
+
+      .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 0.85rem;
+        margin-bottom: 1.8rem;
+      }
+
+      .meta-box {
+        background: rgba(255, 0, 127, 0.03);
+        border-left: 3px solid var(--crimson-lust);
+        padding: 0.75rem 0.9rem;
+        border-top: 1px solid rgba(255, 0, 127, 0.1);
+        border-right: 1px solid rgba(255, 0, 127, 0.1);
+        border-bottom: 1px solid rgba(255, 0, 127, 0.1);
+      }
+
+      .meta-label {
+        font-family: var(--font-display);
+        font-size: 0.68rem;
+        color: var(--text-muted);
+        letter-spacing: 1px;
+        margin-bottom: 2px;
+      }
+
+      .meta-val {
+        font-family: var(--font-mono);
+        font-size: 0.95rem;
+        color: #fff;
+        font-weight: 700;
+      }
+
+      .description-box {
+        background: rgba(0, 0, 0, 0.25);
+        border-left: 2px solid var(--border-pink);
+        padding: 1.1rem 1.25rem;
+        margin-bottom: 1.8rem;
+      }
+
+      .description {
+        font-size: 1.1rem;
+        line-height: 1.65;
+        color: #e2e8f0;
+        white-space: pre-line;
+      }
+
+      .section-wrap {
+        margin-bottom: 1.25rem;
+      }
+
+      .section-heading {
+        font-family: var(--font-display);
+        font-size: 0.72rem;
+        letter-spacing: 1.5px;
+        color: var(--blush-glow);
+        margin-bottom: 0.5rem;
+      }
+
+      .badge-collection {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .hud-badge-tag {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        padding: 4px 9px;
+        background: rgba(0, 240, 255, 0.08);
+        border: 1px solid var(--border-cyan);
+        color: #e2f8ff;
+      }
+
+      .hud-badge-trigger {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        padding: 4px 9px;
+        background: rgba(255, 0, 85, 0.1);
+        border: 1px solid var(--neon-pink);
+        color: #ffe6ef;
+      }
+
+      .changelog-card {
+        margin-top: 1.5rem;
+        border-top: 1px dashed rgba(255, 0, 127, 0.3);
+        padding-top: 1.2rem;
+      }
+
+      .changelog-row {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+      }
+
+      .uplink-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 1rem;
+        font-family: var(--font-display);
+        font-size: 0.8rem;
+        letter-spacing: 1.5px;
+        padding: 8px 16px;
+        background: rgba(0, 240, 255, 0.08);
+        border: 1px solid var(--cyber-cyan);
+        color: var(--cyber-cyan);
+        text-decoration: none;
+        transition: all 0.2s;
+      }
+
+      .uplink-btn:hover {
+        background: var(--cyber-cyan);
+        color: #000;
+        box-shadow: 0 0 15px var(--cyber-cyan);
+      }
+
+      .downlink-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 1rem;
+        font-family: var(--font-display);
+        font-size: 0.8rem;
+        letter-spacing: 1.5px;
+        padding: 8px 16px;
+        background: rgba(234, 0, 255, 0.08);
+        border: 1px solid var(--crimson-lust);
+        color: var(--crimson-lust);
+        text-decoration: none;
+        transition: all 0.2s;
+      }
+
+      .downlink-btn:hover {
+        background: var(--crimson-lust);
+        color: #000;
+        box-shadow: 0 0 15px var(--crimson-lust);
+      }
+
+      #hudToast {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        background: #000;
+        border: 1px solid var(--cyber-cyan);
+        color: var(--cyber-cyan);
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        padding: 10px 18px;
+        box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+        pointer-events: none;
+        z-index: 1000;
+      }
+
+      #hudToast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @media (max-width: 950px) {
+        .hud-grid {
+          grid-template-columns: 1fr;
+        }
+        .detail-container {
+          padding: 1.5rem;
+        }
+      }
+      .cyber-navbar {
+        margin: 0 -1.25rem 2rem;
       }
       .detail-container {
-        padding: 1.5rem;
+        margin-bottom: 2rem;
       }
-    }
-      .cyber-navbar { margin: 0 -1.25rem 2rem; }
-    .detail-container { margin-bottom: 2rem; }
-    .hud-loading { text-align: center; color: var(--blush-glow); font-family: var(--font-display); padding: 4rem 0; }
-    .hud-error { color: var(--crimson-lust); font-family: var(--font-display); }
-    .muted-note { font-family: var(--font-mono); color: var(--text-muted); font-size: .85rem; }
-    .meta-val.gold { color: var(--gold-tier); } .meta-val.cyan { color: var(--cyber-cyan); } .meta-val.pink { color: var(--neon-pink); }
-    .meta-val a { color: inherit; text-decoration: none; } .meta-val a:hover { text-decoration: underline; }
-    a.variant-pill { text-decoration: none; color: inherit; } .variant-pill .cur { color: var(--cyber-cyan); font-size: .7rem; }
-    .cc-btn { padding: .55rem .8rem; color: var(--cyber-cyan); border-color: var(--cyber-cyan); background: rgba(0, 240, 255, .08); }
-    .cc-btn:hover { background: rgba(0, 240, 255, .2); }
-    .action-row { display: flex; flex-wrap: wrap; gap: .7rem; align-items: center; margin-top: 1rem; }
-    .action-row .cyber-btn { padding: .6rem 1.1rem; font-size: .75rem; }
-    .action-row .fav-btn { width: 42px; height: 42px; }
-    .link-row { display: flex; flex-wrap: wrap; gap: .8rem; margin: 1rem 0; }
-    .cl-date { color: var(--cyber-cyan); } .cl-var { color: var(--neon-pink); }
-    a.hud-badge-tag, a.hud-badge-trigger { text-decoration: none; }
-    .hud-badge-trigger.installed { box-shadow: 0 0 10px rgba(255, 170, 0, .45); }
-    .description-box.note { margin-top: .9rem; } .description-box.note .section-heading { margin-bottom: .4rem; }
-    .detail-section { margin-top: 2rem; border-top: 1px dashed rgba(255, 0, 127, .25); padding-top: .5rem; }
-    .detail-section .rail .card-cover-wrapper { height: 170px; }
-  </style>
-</head>
-<body data-nav="library">
-  <div class="detail-container" id="hudContainer">
-    <div class="hud-loading">[ INITIALIZING HETAIRA AUDIO HUD PROTOCOL... ]</div>
-  </div>
-  <script src="config.js"></script>
-  <script src="common.js"></script>
-  <script src="listing.js"></script>
-  <script>
-    const { esc, $ } = H;
-    let audio = null, vizTimer = null, vizBars = [];
+      .hud-loading {
+        text-align: center;
+        color: var(--blush-glow);
+        font-family: var(--font-display);
+        padding: 4rem 0;
+      }
+      .hud-error {
+        color: var(--crimson-lust);
+        font-family: var(--font-display);
+      }
+      .muted-note {
+        font-family: var(--font-mono);
+        color: var(--text-muted);
+        font-size: 0.85rem;
+      }
+      .meta-val.gold {
+        color: var(--gold-tier);
+      }
+      .meta-val.cyan {
+        color: var(--cyber-cyan);
+      }
+      .meta-val.pink {
+        color: var(--neon-pink);
+      }
+      .meta-val a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .meta-val a:hover {
+        text-decoration: underline;
+      }
+      a.variant-pill {
+        text-decoration: none;
+        color: inherit;
+      }
+      .variant-pill .cur {
+        color: var(--cyber-cyan);
+        font-size: 0.7rem;
+      }
+      .cc-btn {
+        padding: 0.55rem 0.8rem;
+        color: var(--cyber-cyan);
+        border-color: var(--cyber-cyan);
+        background: rgba(0, 240, 255, 0.08);
+      }
+      .cc-btn:hover {
+        background: rgba(0, 240, 255, 0.2);
+      }
+      .action-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.7rem;
+        align-items: center;
+        margin-top: 1rem;
+      }
+      .action-row .cyber-btn {
+        padding: 0.6rem 1.1rem;
+        font-size: 0.75rem;
+      }
+      .action-row .fav-btn {
+        width: 42px;
+        height: 42px;
+      }
+      .link-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+        margin: 1rem 0;
+      }
+      .cl-date {
+        color: var(--cyber-cyan);
+      }
+      .cl-var {
+        color: var(--neon-pink);
+      }
+      a.hud-badge-tag,
+      a.hud-badge-trigger {
+        text-decoration: none;
+      }
+      .hud-badge-trigger.installed {
+        box-shadow: 0 0 10px rgba(255, 170, 0, 0.45);
+      }
+      .description-box.note {
+        margin-top: 0.9rem;
+      }
+      .description-box.note .section-heading {
+        margin-bottom: 0.4rem;
+      }
+      .detail-section {
+        margin-top: 2rem;
+        border-top: 1px dashed rgba(255, 0, 127, 0.25);
+        padding-top: 0.5rem;
+      }
+      .detail-section .rail .card-cover-wrapper {
+        height: 170px;
+      }
+    </style>
+  </head>
+  <body data-nav="library">
+    <div class="detail-container" id="hudContainer">
+      <div class="hud-loading">
+        [ INITIALIZING HETAIRA AUDIO HUD PROTOCOL... ]
+      </div>
+    </div>
+    <script src="config.js"></script>
+    <script src="common.js"></script>
+    <script src="listing.js"></script>
+    <script>
+      const { esc, $ } = H;
+      let audio = null,
+        vizTimer = null,
+        vizBars = [];
 
-    document.addEventListener('DOMContentLoaded', load);
-    addEventListener('popstate', load);
-    addEventListener('keydown', e => {
-      if (!audio || /^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/.test(document.activeElement.tagName)) return;
-      if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
-      else if (e.key === 'ArrowRight') audio.currentTime = Math.min(audio.duration || Infinity, audio.currentTime + 10);
-      else if (e.key === 'ArrowLeft') audio.currentTime = Math.max(0, audio.currentTime - 10);
-      else if (e.key.toLowerCase() === 'm') audio.muted = !audio.muted;
-    });
-    const togglePlay = () => (audio.paused ? audio.play().catch(() => H.toast('AUDIO FEED UNAVAILABLE')) : audio.pause());
+      document.addEventListener("DOMContentLoaded", load);
+      addEventListener("popstate", load);
+      addEventListener("keydown", (e) => {
+        if (
+          !audio ||
+          /^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/.test(
+            document.activeElement.tagName,
+          )
+        )
+          return;
+        if (e.code === "Space") {
+          e.preventDefault();
+          togglePlay();
+        } else if (e.key === "ArrowRight")
+          audio.currentTime = Math.min(
+            audio.duration || Infinity,
+            audio.currentTime + 10,
+          );
+        else if (e.key === "ArrowLeft")
+          audio.currentTime = Math.max(0, audio.currentTime - 10);
+        else if (e.key.toLowerCase() === "m") audio.muted = !audio.muted;
+      });
+      const togglePlay = () =>
+        audio.paused
+          ? audio.play().catch(() => H.toast("AUDIO FEED UNAVAILABLE"))
+          : audio.pause();
 
-    // A replaced HUD removes the <audio> element from the page, but a detached element keeps playing.
-    function teardown() {
-      clearInterval(vizTimer); vizTimer = null;
-      if (audio) { audio.pause(); audio.removeAttribute('src'); audio.load(); audio = null; }
-      if ('mediaSession' in navigator) navigator.mediaSession.metadata = null;
-    }
-    const topbar = '<div class="hud-topbar"><a href="library.html" class="back-btn">&larr; RETURN TO LIBRARY</a></div>';
+      // A replaced HUD removes the <audio> element from the page, but a detached element keeps playing.
+      function teardown() {
+        clearInterval(vizTimer);
+        vizTimer = null;
+        if (audio) {
+          audio.pause();
+          audio.removeAttribute("src");
+          audio.load();
+          audio = null;
+        }
+        if ("mediaSession" in navigator) navigator.mediaSession.metadata = null;
+      }
+      const topbar =
+        '<div class="hud-topbar"><a href="library.html" class="back-btn">&larr; RETURN TO LIBRARY</a></div>';
 
-    async function load() {
-      teardown();
-      const box = $('#hudContainer');
-      const id = H.q('id').trim().toLowerCase(), aid = H.q('aid').trim().toLowerCase();
-      if (!id) { box.innerHTML = `${topbar}<h2 class="hud-error">NO PROTOCOL SPECIFIED</h2>`; return; }
-      try {
-        const cat = await H.loadCatalog();
-        // by record uuid (what every link uses); a bare protocol id is accepted for old bookmarks
-        const row = cat.byUuid.get(id) || cat.rows.find(r => r.id.toLowerCase() === id && (!aid || r.artistUuid === aid));
-        if (!row) { box.innerHTML = `${topbar}<h2 class="hud-error">RECORD NOT FOUND IN ARCHIVES</h2><p class="muted-note">It may have been removed or renamed.</p>`; return; }
-        const full = await H.record(row.artistUuid, row.uuid).catch(() => null);   // description, file, hash, changelog ...
-        render({ ...row, ...(full || {}), _row: row }, cat);
-      } catch (err) { console.error(err); box.innerHTML = `${topbar}<h2 class="hud-error">TELEMETRY TRANSMISSION CORRUPTED</h2>`; }
-    }
+      async function load() {
+        teardown();
+        const box = $("#hudContainer");
+        const id = H.q("id").trim().toLowerCase(),
+          aid = H.q("aid").trim().toLowerCase();
+        if (!id) {
+          box.innerHTML = `${topbar}<h2 class="hud-error">NO PROTOCOL SPECIFIED</h2>`;
+          return;
+        }
+        try {
+          const cat = await H.loadCatalog();
+          // by record uuid (what every link uses); a bare protocol id is accepted for old bookmarks
+          const row =
+            cat.byUuid.get(id) ||
+            cat.rows.find(
+              (r) =>
+                r.id.toLowerCase() === id && (!aid || r.artistUuid === aid),
+            );
+          if (!row) {
+            box.innerHTML = `${topbar}<h2 class="hud-error">RECORD NOT FOUND IN ARCHIVES</h2><p class="muted-note">It may have been removed or renamed.</p>`;
+            return;
+          }
+          const full = await H.record(row.artistUuid, row.uuid).catch(
+            () => null,
+          ); // description, file, hash, changelog ...
+          render({ ...row, ...(full || {}), _row: row }, cat);
+        } catch (err) {
+          console.error(err);
+          box.innerHTML = `${topbar}<h2 class="hud-error">TELEMETRY TRANSMISSION CORRUPTED</h2>`;
+        }
+      }
 
-    function related(cat, row) {
-      const mine = new Set([row.tag, ...row.tags].filter(Boolean));
-      return cat.items.filter(r => r.uuid !== row.uuid && r.id !== row.id).map(r => {
-        const shared = [r.tag, ...r.tags].filter(t => t && mine.has(t)).length;
-        return { r, score: shared * 2 + (r.artistUuid === row.artistUuid ? 1 : 0) + (r.album && r.album === row.album ? 3 : 0) };
-      }).filter(x => x.score > 1).sort((a, b) => b.score - a.score || H.sorters.newest(a.r, b.r)).slice(0, 8).map(x => x.r);
-    }
+      function related(cat, row) {
+        const mine = new Set([row.tag, ...row.tags].filter(Boolean));
+        return cat.items
+          .filter((r) => r.uuid !== row.uuid && r.id !== row.id)
+          .map((r) => {
+            const shared = [r.tag, ...r.tags].filter(
+              (t) => t && mine.has(t),
+            ).length;
+            return {
+              r,
+              score:
+                shared * 2 +
+                (r.artistUuid === row.artistUuid ? 1 : 0) +
+                (r.album && r.album === row.album ? 3 : 0),
+            };
+          })
+          .filter((x) => x.score > 1)
+          .sort((a, b) => b.score - a.score || H.sorters.newest(a.r, b.r))
+          .slice(0, 8)
+          .map((x) => x.r);
+      }
 
-    function render(item, cat) {
-      const row = item._row;
-      const variants = cat.rows.filter(r => r.artistUuid === row.artistUuid && r.id === row.id);
-      const det = item.details || {};
-      const detText = k => (Array.isArray(det[k]) ? det[k].join(', ') : String(det[k] || ''));
-      const DETAIL_BOXES = [['SETTING', 'setting'], ['CONSENT', 'consent'], ['D/S DYNAMIC', 'dynamic'], ['EFFECTS', 'effects'], ['BACKGROUND', 'background'], ['ORGASM', 'orgasm'],
-        ['HYPNOSIS STYLE', 'style'], ['LEVEL', 'level'], ['INDUCTION', 'induction'], ['DEEPENER', 'deepener'], ['BODY', 'body'], ['WAKENER', 'wakener'], ['AFTERCARE', 'aftercare']];
-      const installed = new Set((item.triggersInstalled || []).map(t => H.slugify(t)));
-      const tones = Array.isArray(item.tone) ? item.tone.join(', ') : String(item.tone || '');
-      const changelog = Array.isArray(item.changelog) ? item.changelog : [];
-      const audioUrls = item.file ? window.assetUrls(item.file, 'audio') : [];
-      const album = row._albumSlug ? cat.rows.filter(r => r._albumSlug === row._albumSlug && (!r.status || r.status === 'ACTIVE')).sort((a, b) => (a.track || 1e9) - (b.track || 1e9) || a.id.localeCompare(b.id, undefined, { numeric: true })) : [];
-      const pos = album.findIndex(r => r.uuid === row.uuid);
-      const prev = pos > 0 ? album[pos - 1] : null, next = pos >= 0 && pos < album.length - 1 ? album[pos + 1] : null;
-      const rel = related(cat, row);
-      document.title = `${item.title} // HETAIRA.EROS`;
-      const og = (p, v) => { let m = document.querySelector(`meta[property="${p}"]`); if (!m) { m = document.createElement('meta'); m.setAttribute('property', p); document.head.appendChild(m); } m.content = v; };
-      og('og:title', item.title); og('og:description', (item.description || '').slice(0, 200));
-      const coverUrl = H.coverChain(item.artistUuid, item.cover)[0]; if (!coverUrl.startsWith('data:')) og('og:image', coverUrl);
+      function render(item, cat) {
+        const row = item._row;
+        const variants = cat.rows.filter(
+          (r) => r.artistUuid === row.artistUuid && r.id === row.id,
+        );
+        const det = item.details || {};
+        const detText = (k) =>
+          Array.isArray(det[k]) ? det[k].join(", ") : String(det[k] || "");
+        const DETAIL_BOXES = [
+          ["SETTING", "setting"],
+          ["CONSENT", "consent"],
+          ["D/S DYNAMIC", "dynamic"],
+          ["EFFECTS", "effects"],
+          ["BACKGROUND", "background"],
+          ["ORGASM", "orgasm"],
+          ["HYPNOSIS STYLE", "style"],
+          ["LEVEL", "level"],
+          ["INDUCTION", "induction"],
+          ["DEEPENER", "deepener"],
+          ["BODY", "body"],
+          ["WAKENER", "wakener"],
+          ["AFTERCARE", "aftercare"],
+        ];
+        const installed = new Set(
+          (item.triggersInstalled || []).map((t) => H.slugify(t)),
+        );
+        const tones = Array.isArray(item.tone)
+          ? item.tone.join(", ")
+          : String(item.tone || "");
+        const changelog = Array.isArray(item.changelog) ? item.changelog : [];
+        const audioUrls = item.file ? window.assetUrls(item.file, "audio") : [];
+        const album = row._albumSlug
+          ? cat.rows
+              .filter(
+                (r) =>
+                  r._albumSlug === row._albumSlug &&
+                  (!r.status || r.status === "ACTIVE"),
+              )
+              .sort(
+                (a, b) =>
+                  (a.track || 1e9) - (b.track || 1e9) ||
+                  a.id.localeCompare(b.id, undefined, { numeric: true }),
+              )
+          : [];
+        const pos = album.findIndex((r) => r.uuid === row.uuid);
+        const prev = pos > 0 ? album[pos - 1] : null,
+          next = pos >= 0 && pos < album.length - 1 ? album[pos + 1] : null;
+        const rel = related(cat, row);
+        document.title = `${item.title} // HETAIRA.EROS`;
+        const og = (p, v) => {
+          let m = document.querySelector(`meta[property="${p}"]`);
+          if (!m) {
+            m = document.createElement("meta");
+            m.setAttribute("property", p);
+            document.head.appendChild(m);
+          }
+          m.content = v;
+        };
+        og("og:title", item.title);
+        og("og:description", (item.description || "").slice(0, 200));
+        const coverUrl = H.coverChain(item.artistUuid, item.cover)[0];
+        if (!coverUrl.startsWith("data:")) og("og:image", coverUrl);
 
-      $('#hudContainer').innerHTML = `
+        $("#hudContainer").innerHTML = `
         <div class="hud-topbar">
           <a href="library.html" class="back-btn">&larr; RETURN TO LIBRARY</a>
-          <div class="hud-status-badge"><div class="status-dot"></div>PROTOCOL FEED: ${esc(item.status || 'ACTIVE')}</div>
+          <div class="hud-status-badge"><div class="status-dot"></div>PROTOCOL FEED: ${esc(item.status || "ACTIVE")}</div>
         </div>
         <div class="hud-grid">
           <div class="media-col">
-            <div class="cover-frame">${H.coverImg(item, 'cover-img', item.title)}<div class="tier-overlay">${esc(item.tier || 'FREE')}</div></div>
+            <div class="cover-frame">${H.coverImg(item, "cover-img", item.title)}<div class="tier-overlay">${esc(item.tier || "FREE")}</div></div>
             <div class="audio-console">
               <canvas id="equalizer" class="equalizer-canvas" width="340" height="52"></canvas>
-              <div class="scrubber-wrap"><span id="currentTime">00:00</span><input type="range" id="seekSlider" class="cyber-range" value="0" min="0" max="100" step="0.1" aria-label="Seek"><span id="durationTime">${item.duration ? H.fmtDur(item.duration) : '--:--'}</span></div>
+              <div class="scrubber-wrap"><span id="currentTime">00:00</span><input type="range" id="seekSlider" class="cyber-range" value="0" min="0" max="100" step="0.1" aria-label="Seek"><span id="durationTime">${item.duration ? H.fmtDur(item.duration) : "--:--"}</span></div>
               <div class="audio-controls-row">
                 <div class="playback-group">
                   <button id="skipBackBtn" class="cyber-btn" title="Rewind 10s">-10s</button>
-                  <button id="playBtn" class="play-btn"${audioUrls.length ? '' : ' disabled'}>${audioUrls.length ? 'PLAY FEED' : 'NO AUDIO'}</button>
+                  <button id="playBtn" class="play-btn"${audioUrls.length ? "" : " disabled"}>${audioUrls.length ? "PLAY FEED" : "NO AUDIO"}</button>
                   <button id="skipFwdBtn" class="cyber-btn" title="Fast-forward 10s">+10s</button>
                 </div>
                 <div class="volume-wrap"><button id="muteBtn" class="cyber-btn" title="Toggle Mute (M)">VOL</button><input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.05" value="1" aria-label="Volume"></div>
                 <div class="playback-group">
                   <button id="speedBtn" class="cyber-btn" title="Playback Speed">1.0x</button>
                   <button id="loopBtn" class="cyber-btn" title="Toggle Loop">LOOP</button>
-                  ${item.file && item.vtt ? `<a class="cyber-btn cc-btn" href="${H.playerUrl(row)}" title="Listen along with synced subtitles">CC</a>` : ''}
+                  ${item.file && item.vtt ? `<a class="cyber-btn cc-btn" href="${H.playerUrl(row)}" title="Listen along with synced subtitles">CC</a>` : ""}
                 </div>
               </div>
               <audio id="audioSource" preload="metadata"></audio>
@@ -691,7 +930,7 @@
             <div class="action-row">
               ${H.heart(row.uuid)}
               <button type="button" class="cyber-btn btn-ghost" id="shareBtn">SHARE</button>
-              ${audioUrls.length && row._free ? `<a class="cyber-btn btn-ghost" id="dlBtn" href="${esc(audioUrls[0])}" target="_blank" rel="noopener">DOWNLOAD</a>` : ''}
+              ${audioUrls.length && row._free ? `<a class="cyber-btn btn-ghost" id="dlBtn" href="${esc(audioUrls[0])}" target="_blank" rel="noopener">DOWNLOAD</a>` : ""}
             </div>
           </div>
 
@@ -699,118 +938,279 @@
             <div class="uuid-tag-row"><span class="uuid-tag">TARGET_UUID: ${esc(item.uuid)}</span><button class="copy-btn" id="copyUuidBtn">COPY UUID</button></div>
             <h1 class="title">${esc(item.title)}</h1>
             <div class="protocol-tag-row">
-              <div class="primary-tag">${esc(item.id)} // ${esc(item.tag || 'AUDIO RECORD')}</div>
-              ${item.variant ? `<span class="variant-badge-active">VARIANT: ${esc(item.variant)}</span>` : ''}
+              <div class="primary-tag">${esc(item.id)} // ${esc(item.tag || "AUDIO RECORD")}</div>
+              ${item.variant ? `<span class="variant-badge-active">VARIANT: ${esc(item.variant)}</span>` : ""}
             </div>
-            ${variants.length > 1 ? `<div class="variants-card"><div class="variant-pill-grid">${variants.map(v => `
-              <a class="variant-pill ${v.uuid === row.uuid ? 'is-active' : ''}" href="${H.detailUrl(v)}" data-uuid="${esc(v.uuid)}">
-                <span class="variant-pill-tag">${esc(v.variant || v.audience || 'STANDARD')}</span><span>${esc(v.title)}</span>${v.uuid === row.uuid ? '<span class="cur">[ACTIVE]</span>' : ''}</a>`).join('')}</div></div>` : ''}
+            ${
+              variants.length > 1
+                ? `<div class="variants-card"><div class="variant-pill-grid">${variants
+                    .map(
+                      (v) => `
+              <a class="variant-pill ${v.uuid === row.uuid ? "is-active" : ""}" href="${H.detailUrl(v)}" data-uuid="${esc(v.uuid)}">
+                <span class="variant-pill-tag">${esc(v.variant || v.audience || "STANDARD")}</span><span>${esc(v.title)}</span>${v.uuid === row.uuid ? '<span class="cur">[ACTIVE]</span>' : ""}</a>`,
+                    )
+                    .join("")}</div></div>`
+                : ""
+            }
             <div class="meta-grid">
-              <div class="meta-box"><div class="meta-label">ACCESS TIER</div><div class="meta-val gold">${esc(item.tier || 'FREE')}</div></div>
-              <div class="meta-box"><div class="meta-label">AUDIENCE SPEC</div><div class="meta-val cyan">${esc(item.audience || 'ALL')}</div></div>
+              <div class="meta-box"><div class="meta-label">ACCESS TIER</div><div class="meta-val gold">${esc(item.tier || "FREE")}</div></div>
+              <div class="meta-box"><div class="meta-label">AUDIENCE SPEC</div><div class="meta-val cyan">${esc(item.audience || "ALL")}</div></div>
               <div class="meta-box"><div class="meta-label">VOICE ARTIST</div><div class="meta-val">${H.artistLinks(row)}</div></div>
               <div class="meta-box"><div class="meta-label">PRODUCER / AUTHOR</div><div class="meta-val">${esc(item.author || row._artistNames[0])}</div></div>
-              <div class="meta-box"><div class="meta-label">DURATION</div><div class="meta-val">${item.duration ? H.fmtDur(item.duration) : '—'}</div></div>
-              <div class="meta-box"><div class="meta-label">RELEASE DATE</div><div class="meta-val">${esc(item.releaseDate ? H.fmtDate(item.releaseDate) : 'UNKNOWN')}</div></div>
-              ${tones ? `<div class="meta-box"><div class="meta-label">TONAL SPECTRUM</div><div class="meta-val pink">${esc(tones)}</div></div>` : ''}
-              ${DETAIL_BOXES.filter(([, k]) => detText(k)).map(([label, k]) => `<div class="meta-box"><div class="meta-label">${label}</div><div class="meta-val">${esc(detText(k))}</div></div>`).join('')}
-              ${item.album ? `<div class="meta-box"><div class="meta-label">ALBUM</div><div class="meta-val"><a href="${H.albumUrl(row._albumSlug)}">${esc(item.album)}</a>${item.albumTrack ? ` · #${item.albumTrack}` : ''}</div></div>` : ''}
+              <div class="meta-box"><div class="meta-label">DURATION</div><div class="meta-val">${item.duration ? H.fmtDur(item.duration) : "—"}</div></div>
+              <div class="meta-box"><div class="meta-label">RELEASE DATE</div><div class="meta-val">${esc(item.releaseDate ? H.fmtDate(item.releaseDate) : "UNKNOWN")}</div></div>
+              ${tones ? `<div class="meta-box"><div class="meta-label">TONAL SPECTRUM</div><div class="meta-val pink">${esc(tones)}</div></div>` : ""}
+              ${DETAIL_BOXES.filter(([, k]) => detText(k))
+                .map(
+                  ([label, k]) =>
+                    `<div class="meta-box"><div class="meta-label">${label}</div><div class="meta-val">${esc(detText(k))}</div></div>`,
+                )
+                .join("")}
+              ${item.album ? `<div class="meta-box"><div class="meta-label">ALBUM</div><div class="meta-val"><a href="${H.albumUrl(row._albumSlug)}">${esc(item.album)}</a>${item.albumTrack ? ` · #${item.albumTrack}` : ""}</div></div>` : ""}
             </div>
-            <div class="description-box"><p class="description">${esc(item.description || 'No descriptive payload attached.').replace(/\n/g, '<br>')}</p></div>
-            ${det.instructions ? `<div class="description-box note"><div class="section-heading">// LISTENER INSTRUCTIONS:</div><p class="description">${esc(det.instructions).replace(/\n/g, '<br>')}</p></div>` : ''}
-            ${det.intendedEffect ? `<div class="description-box note"><div class="section-heading">// INTENDED EFFECT:</div><p class="description">${esc(det.intendedEffect).replace(/\n/g, '<br>')}</p></div>` : ''}
-            ${row.tag || row.tags.length ? `<div class="section-wrap"><div class="section-heading">// DESCRIPTOR TAGS:</div><div class="badge-collection">
-              ${[...new Set([row.tag, ...row.tags].filter(Boolean))].map(t => `<a class="hud-badge-tag" href="${H.tagUrl(t)}">#${esc(t)}</a>`).join('')}</div></div>` : ''}
-            ${row.triggers.length ? `<div class="section-wrap"><div class="section-heading">// NEURAL / CONTENT TRIGGERS:</div><div class="badge-collection">
-              ${row.triggers.map(t => `<a class="hud-badge-trigger${installed.has(H.slugify(t)) ? ' installed' : ''}" href="${H.triggerUrl(t)}"${installed.has(H.slugify(t)) ? ' title="Installed by this file"' : ' title="Used in this file"'}>${installed.has(H.slugify(t)) ? '&#9733;' : '&#9888;'} ${esc(t)}</a>`).join('')}</div>${installed.size ? '<div class="muted-note" style="margin-top:.5rem">&#9733; installed by this file &middot; &#9888; used</div>' : ''}</div>` : ''}
+            <div class="description-box"><p class="description">${esc(item.description || "No descriptive payload attached.").replace(/\n/g, "<br>")}</p></div>
+            ${det.instructions ? `<div class="description-box note"><div class="section-heading">// LISTENER INSTRUCTIONS:</div><p class="description">${esc(det.instructions).replace(/\n/g, "<br>")}</p></div>` : ""}
+            ${det.intendedEffect ? `<div class="description-box note"><div class="section-heading">// INTENDED EFFECT:</div><p class="description">${esc(det.intendedEffect).replace(/\n/g, "<br>")}</p></div>` : ""}
+            ${
+              row.tag || row.tags.length
+                ? `<div class="section-wrap"><div class="section-heading">// DESCRIPTOR TAGS:</div><div class="badge-collection">
+              ${[...new Set([row.tag, ...row.tags].filter(Boolean))].map((t) => `<a class="hud-badge-tag" href="${H.tagUrl(t)}">#${esc(t)}</a>`).join("")}</div></div>`
+                : ""
+            }
+            ${
+              row.triggers.length
+                ? `<div class="section-wrap"><div class="section-heading">// NEURAL / CONTENT TRIGGERS:</div><div class="badge-collection">
+              ${row.triggers.map((t) => `<a class="hud-badge-trigger${installed.has(H.slugify(t)) ? " installed" : ""}" href="${H.triggerUrl(t)}"${installed.has(H.slugify(t)) ? ' title="Installed by this file"' : ' title="Used in this file"'}>${installed.has(H.slugify(t)) ? "&#9733;" : "&#9888;"} ${esc(t)}</a>`).join("")}</div>${installed.size ? '<div class="muted-note" style="margin-top:.5rem">&#9733; installed by this file &middot; &#9888; used</div>' : ""}</div>`
+                : ""
+            }
             <div class="link-row">
-              ${item.file && item.vtt ? `<a href="${H.playerUrl(row)}" class="uplink-btn"><span>&#9654; LISTEN ALONG // SYNCED SUBTITLES</span></a>` : ''}
-              ${/^https?:\/\//i.test(item.url || '') ? `<a href="${esc(H.safeUrl(item.url))}" target="_blank" rel="noopener noreferrer" class="uplink-btn"><span>&#10138; ACCESS EXTERNAL SOURCE UPLINK</span></a>` : ''}
+              ${item.file && item.vtt ? `<a href="${H.playerUrl(row)}" class="uplink-btn"><span>&#9654; LISTEN ALONG // SYNCED SUBTITLES</span></a>` : ""}
+              ${/^https?:\/\//i.test(item.url || "") ? `<a href="${esc(H.safeUrl(item.url))}" target="_blank" rel="noopener noreferrer" class="uplink-btn"><span>&#10138; ACCESS EXTERNAL SOURCE UPLINK</span></a>` : ""}
             </div>
-            ${changelog.length ? `<div class="changelog-card"><div class="section-heading">// PROTOCOL REVISION LOG:</div>${changelog.map(l => `
-              <div class="changelog-row"><span class="cl-date">${esc(l.date)}</span> &bull; <span class="cl-var">[${esc(l.variant || 'LOG')}]</span> <span>${esc(l.note)}</span></div>`).join('')}</div>` : ''}
+            ${
+              changelog.length
+                ? `<div class="changelog-card"><div class="section-heading">// PROTOCOL REVISION LOG:</div>${changelog
+                    .map(
+                      (l) => `
+              <div class="changelog-row"><span class="cl-date">${esc(l.date)}</span> &bull; <span class="cl-var">[${esc(l.variant || "LOG")}]</span> <span>${esc(l.note)}</span></div>`,
+                    )
+                    .join("")}</div>`
+                : ""
+            }
           </div>
         </div>
 
-        ${album.length > 1 ? `<div class="detail-section"><div class="section-head"><h2>FROM THE ALBUM · <span>${esc(item.album)}</span></h2><a href="${H.albumUrl(row._albumSlug)}">Open album &rarr;</a></div>
-          <ol class="tracklist">${album.map((r, i) => `<li class="${r.uuid === row.uuid ? 'current' : ''}"><span class="n">${r.track || i + 1}</span>
-            <a class="t" href="${H.detailUrl(r)}">${esc(r.title)}</a><span class="vt">${r.audio && r.vtt ? 'CC' : ''}</span><span class="d">${r.dur ? H.fmtDur(r.dur) : ''}</span></li>`).join('')}</ol>
-          <div class="action-row">${prev ? `<a class="cyber-btn btn-ghost" href="${H.detailUrl(prev)}">&larr; PREVIOUS TRACK</a>` : ''}${next ? `<a class="cyber-btn" id="nextTrack" href="${H.detailUrl(next)}">NEXT TRACK &rarr;</a>` : ''}</div></div>` : ''}
-        ${rel.length ? `<div class="detail-section"><div class="section-head"><h2>YOU MAY <span>ALSO LIKE</span></h2></div><div class="rail">${rel.map(r => H.recordCard(r)).join('')}</div></div>` : ''}`;
-
-      // variant pills switch in place (no full reload), keeping the browser history intact
-      document.querySelectorAll('.variant-pill').forEach(p => p.addEventListener('click', e => {
-        if (e.metaKey || e.ctrlKey || e.shiftKey) return;
-        e.preventDefault(); if (p.dataset.uuid === row.uuid) return;
-        const u = new URL(location.href); u.searchParams.set('id', p.dataset.uuid); history.pushState({}, '', u); load();
-      }));
-      $('#copyUuidBtn').addEventListener('click', () => (navigator.clipboard ? navigator.clipboard.writeText(item.uuid).then(() => H.toast('UUID COPIED'), () => H.toast('COPY NOT AVAILABLE')) : H.toast('COPY NOT AVAILABLE')));
-      $('#shareBtn').addEventListener('click', async () => {
-        const data = { title: item.title, text: `${item.title} · HETAIRA.EROS`, url: location.href };
-        if (navigator.share) { try { await navigator.share(data); return; } catch (e) { if (e.name === 'AbortError') return; } }
-        navigator.clipboard ? navigator.clipboard.writeText(location.href).then(() => H.toast('Link copied'), () => H.toast('Copy not available')) : H.toast('Copy not available');
-      });
-      initPlayer(item, row, audioUrls, next);
-    }
-
-    function initPlayer(item, row, urls, next) {
-      audio = $('#audioSource');
-      const playBtn = $('#playBtn'), seek = $('#seekSlider'), cur = $('#currentTime'), dur = $('#durationTime');
-      const canvas = $('#equalizer'), ctx = canvas.getContext('2d');
-      const mmss = s => (isFinite(s) ? H.fmtDur(s) || '0:00' : '--:--');
-      let idx = 0, dragging = false;
-      audio.volume = H.store.get('hetaira:vol', 1); $('#volumeSlider').value = audio.volume;
-
-      // c1 -> c2 -> c3: when a mirror fails, resume from the same position on the next one
-      if (urls.length) {
-        audio.src = urls[0];
-        audio.addEventListener('error', () => {
-          if (idx + 1 < urls.length) { const t = audio.currentTime, was = !audio.paused; audio.src = urls[++idx]; audio.currentTime = t; if (was) audio.play().catch(() => {}); }
-          else { playBtn.textContent = 'UNAVAILABLE'; playBtn.disabled = true; H.toast('AUDIO FEED UNAVAILABLE'); }
-        });
-      }
-      audio.addEventListener('loadedmetadata', () => { if (isFinite(audio.duration)) dur.textContent = mmss(audio.duration); });
-      audio.addEventListener('timeupdate', () => { cur.textContent = mmss(audio.currentTime); if (!dragging && audio.duration) seek.value = (audio.currentTime / audio.duration) * 100; });
-      seek.addEventListener('input', () => { dragging = true; if (isFinite(audio.duration)) audio.currentTime = (seek.value / 100) * audio.duration; });
-      seek.addEventListener('change', () => { dragging = false; });
-      audio.addEventListener('play', () => { playBtn.textContent = 'PAUSE FEED'; playBtn.classList.add('playing'); H.recent.add(row.uuid); startViz(); });
-      audio.addEventListener('pause', () => { playBtn.textContent = 'PLAY FEED'; playBtn.classList.remove('playing'); stopViz(); });
-      audio.addEventListener('ended', () => { if (!audio.loop && next && H.store.get('hetaira:autonext', false)) location.href = H.detailUrl(next); });
-      playBtn.addEventListener('click', togglePlay);
-      $('#skipBackBtn').addEventListener('click', () => { audio.currentTime = Math.max(0, audio.currentTime - 10); });
-      $('#skipFwdBtn').addEventListener('click', () => { audio.currentTime = isFinite(audio.duration) ? Math.min(audio.duration, audio.currentTime + 10) : audio.currentTime + 10; });
-      $('#muteBtn').addEventListener('click', e => { audio.muted = !audio.muted; e.currentTarget.classList.toggle('active', audio.muted); });
-      $('#volumeSlider').addEventListener('input', e => { audio.volume = e.target.value; audio.muted = false; H.store.set('hetaira:vol', +e.target.value); });
-      const speeds = [1, 1.25, 1.5, 2, 0.75]; let si = 0;
-      $('#speedBtn').addEventListener('click', e => { si = (si + 1) % speeds.length; audio.playbackRate = speeds[si]; e.currentTarget.textContent = speeds[si].toFixed(speeds[si] % 1 ? 2 : 1) + 'x'; });
-      $('#loopBtn').addEventListener('click', e => { audio.loop = !audio.loop; e.currentTarget.classList.toggle('active', audio.loop); });
-
-      if ('mediaSession' in navigator) {   // lock-screen / headset controls
-        const art = H.coverChain(item.artistUuid, item.cover)[0];
-        navigator.mediaSession.metadata = new MediaMetadata({ title: item.title, artist: row._artistNames.join(', '), album: item.album || 'HETAIRA.EROS', artwork: art.startsWith('data:') ? [] : [{ src: art }] });
-        navigator.mediaSession.setActionHandler('play', () => audio && audio.play());
-        navigator.mediaSession.setActionHandler('pause', () => audio && audio.pause());
-        navigator.mediaSession.setActionHandler('seekbackward', () => { audio.currentTime = Math.max(0, audio.currentTime - 10); });
-        navigator.mediaSession.setActionHandler('seekforward', () => { audio.currentTime += 10; });
-      }
-
-      // decorative equalizer (animated only while playing)
-      const N = 28; vizBars = Array(N).fill(4);
-      const draw = playing => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const w = canvas.width / N;
-        for (let i = 0; i < N; i++) {
-          const target = playing ? 6 + Math.random() * 40 : 4;
-          vizBars[i] += (target - vizBars[i]) * 0.5;
-          const g = ctx.createLinearGradient(0, canvas.height, 0, 0); g.addColorStop(0, '#ff007f'); g.addColorStop(1, '#00f0ff');
-          ctx.fillStyle = g; ctx.fillRect(i * w + 2, canvas.height - vizBars[i], w - 4, vizBars[i]);
+        ${
+          album.length > 1
+            ? `<div class="detail-section"><div class="section-head"><h2>FROM THE ALBUM · <span>${esc(item.album)}</span></h2><a href="${H.albumUrl(row._albumSlug)}">Open album &rarr;</a></div>
+          <ol class="tracklist">${album
+            .map(
+              (
+                r,
+                i,
+              ) => `<li class="${r.uuid === row.uuid ? "current" : ""}"><span class="n">${r.track || i + 1}</span>
+            <a class="t" href="${H.detailUrl(r)}">${esc(r.title)}</a><span class="vt">${r.audio && r.vtt ? "CC" : ""}</span><span class="d">${r.dur ? H.fmtDur(r.dur) : ""}</span></li>`,
+            )
+            .join("")}</ol>
+          <div class="action-row">${prev ? `<a class="cyber-btn btn-ghost" href="${H.detailUrl(prev)}">&larr; PREVIOUS TRACK</a>` : ""}${next ? `<a class="cyber-btn" id="nextTrack" href="${H.detailUrl(next)}">NEXT TRACK &rarr;</a>` : ""}</div></div>`
+            : ""
         }
-      };
-      const startViz = () => { clearInterval(vizTimer); vizTimer = setInterval(() => draw(true), 90); };
-      const stopViz = () => { clearInterval(vizTimer); vizTimer = null; draw(false); };
-      draw(false);
-    }
+        ${rel.length ? `<div class="detail-section"><div class="section-head"><h2>YOU MAY <span>ALSO LIKE</span></h2></div><div class="rail">${rel.map((r) => H.recordCard(r)).join("")}</div></div>` : ""}`;
 
-  </script>
-</body>
+        // variant pills switch in place (no full reload), keeping the browser history intact
+        document.querySelectorAll(".variant-pill").forEach((p) =>
+          p.addEventListener("click", (e) => {
+            if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+            e.preventDefault();
+            if (p.dataset.uuid === row.uuid) return;
+            const u = new URL(location.href);
+            u.searchParams.set("id", p.dataset.uuid);
+            history.pushState({}, "", u);
+            load();
+          }),
+        );
+        $("#copyUuidBtn").addEventListener("click", () =>
+          navigator.clipboard
+            ? navigator.clipboard.writeText(item.uuid).then(
+                () => H.toast("UUID COPIED"),
+                () => H.toast("COPY NOT AVAILABLE"),
+              )
+            : H.toast("COPY NOT AVAILABLE"),
+        );
+        $("#shareBtn").addEventListener("click", async () => {
+          const data = {
+            title: item.title,
+            text: `${item.title} · HETAIRA.EROS`,
+            url: location.href,
+          };
+          if (navigator.share) {
+            try {
+              await navigator.share(data);
+              return;
+            } catch (e) {
+              if (e.name === "AbortError") return;
+            }
+          }
+          navigator.clipboard
+            ? navigator.clipboard.writeText(location.href).then(
+                () => H.toast("Link copied"),
+                () => H.toast("Copy not available"),
+              )
+            : H.toast("Copy not available");
+        });
+        initPlayer(item, row, audioUrls, next);
+      }
+
+      function initPlayer(item, row, urls, next) {
+        audio = $("#audioSource");
+        const playBtn = $("#playBtn"),
+          seek = $("#seekSlider"),
+          cur = $("#currentTime"),
+          dur = $("#durationTime");
+        const canvas = $("#equalizer"),
+          ctx = canvas.getContext("2d");
+        const mmss = (s) => (isFinite(s) ? H.fmtDur(s) || "0:00" : "--:--");
+        let idx = 0,
+          dragging = false;
+        audio.volume = H.store.get("hetaira:vol", 1);
+        $("#volumeSlider").value = audio.volume;
+
+        // c1 -> c2 -> c3: when a mirror fails, resume from the same position on the next one
+        if (urls.length) {
+          audio.src = urls[0];
+          audio.addEventListener("error", () => {
+            if (idx + 1 < urls.length) {
+              const t = audio.currentTime,
+                was = !audio.paused;
+              audio.src = urls[++idx];
+              audio.currentTime = t;
+              if (was) audio.play().catch(() => {});
+            } else {
+              playBtn.textContent = "UNAVAILABLE";
+              playBtn.disabled = true;
+              H.toast("AUDIO FEED UNAVAILABLE");
+            }
+          });
+        }
+        audio.addEventListener("loadedmetadata", () => {
+          if (isFinite(audio.duration)) dur.textContent = mmss(audio.duration);
+        });
+        audio.addEventListener("timeupdate", () => {
+          cur.textContent = mmss(audio.currentTime);
+          if (!dragging && audio.duration)
+            seek.value = (audio.currentTime / audio.duration) * 100;
+        });
+        seek.addEventListener("input", () => {
+          dragging = true;
+          if (isFinite(audio.duration))
+            audio.currentTime = (seek.value / 100) * audio.duration;
+        });
+        seek.addEventListener("change", () => {
+          dragging = false;
+        });
+        audio.addEventListener("play", () => {
+          playBtn.textContent = "PAUSE FEED";
+          playBtn.classList.add("playing");
+          H.recent.add(row.uuid);
+          startViz();
+        });
+        audio.addEventListener("pause", () => {
+          playBtn.textContent = "PLAY FEED";
+          playBtn.classList.remove("playing");
+          stopViz();
+        });
+        audio.addEventListener("ended", () => {
+          if (!audio.loop && next && H.store.get("hetaira:autonext", false))
+            location.href = H.detailUrl(next);
+        });
+        playBtn.addEventListener("click", togglePlay);
+        $("#skipBackBtn").addEventListener("click", () => {
+          audio.currentTime = Math.max(0, audio.currentTime - 10);
+        });
+        $("#skipFwdBtn").addEventListener("click", () => {
+          audio.currentTime = isFinite(audio.duration)
+            ? Math.min(audio.duration, audio.currentTime + 10)
+            : audio.currentTime + 10;
+        });
+        $("#muteBtn").addEventListener("click", (e) => {
+          audio.muted = !audio.muted;
+          e.currentTarget.classList.toggle("active", audio.muted);
+        });
+        $("#volumeSlider").addEventListener("input", (e) => {
+          audio.volume = e.target.value;
+          audio.muted = false;
+          H.store.set("hetaira:vol", +e.target.value);
+        });
+        const speeds = [1, 1.25, 1.5, 2, 0.75];
+        let si = 0;
+        $("#speedBtn").addEventListener("click", (e) => {
+          si = (si + 1) % speeds.length;
+          audio.playbackRate = speeds[si];
+          e.currentTarget.textContent =
+            speeds[si].toFixed(speeds[si] % 1 ? 2 : 1) + "x";
+        });
+        $("#loopBtn").addEventListener("click", (e) => {
+          audio.loop = !audio.loop;
+          e.currentTarget.classList.toggle("active", audio.loop);
+        });
+
+        if ("mediaSession" in navigator) {
+          // lock-screen / headset controls
+          const art = H.coverChain(item.artistUuid, item.cover)[0];
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: item.title,
+            artist: row._artistNames.join(", "),
+            album: item.album || "HETAIRA.EROS",
+            artwork: art.startsWith("data:") ? [] : [{ src: art }],
+          });
+          navigator.mediaSession.setActionHandler(
+            "play",
+            () => audio && audio.play(),
+          );
+          navigator.mediaSession.setActionHandler(
+            "pause",
+            () => audio && audio.pause(),
+          );
+          navigator.mediaSession.setActionHandler("seekbackward", () => {
+            audio.currentTime = Math.max(0, audio.currentTime - 10);
+          });
+          navigator.mediaSession.setActionHandler("seekforward", () => {
+            audio.currentTime += 10;
+          });
+        }
+
+        // decorative equalizer (animated only while playing)
+        const N = 28;
+        vizBars = Array(N).fill(4);
+        const draw = (playing) => {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          const w = canvas.width / N;
+          for (let i = 0; i < N; i++) {
+            const target = playing ? 6 + Math.random() * 40 : 4;
+            vizBars[i] += (target - vizBars[i]) * 0.5;
+            const g = ctx.createLinearGradient(0, canvas.height, 0, 0);
+            g.addColorStop(0, "#ff007f");
+            g.addColorStop(1, "#00f0ff");
+            ctx.fillStyle = g;
+            ctx.fillRect(
+              i * w + 2,
+              canvas.height - vizBars[i],
+              w - 4,
+              vizBars[i],
+            );
+          }
+        };
+        const startViz = () => {
+          clearInterval(vizTimer);
+          vizTimer = setInterval(() => draw(true), 90);
+        };
+        const stopViz = () => {
+          clearInterval(vizTimer);
+          vizTimer = null;
+          draw(false);
+        };
+        draw(false);
+      }
+    </script>
+  </body>
 </html>
